@@ -69,6 +69,8 @@ const
     {$ENDIF}
   {$ENDIF}
 
+{$I ctypes.inc}                           // C data types
+
 { The include file translates
   corresponding C header file.
                                           Inc file was updated against
@@ -77,6 +79,16 @@ const
 {$I SDL_log.inc}                          // 3.1.6-prev
 {$I SDL_version.inc}                      // 3.1.6-prev
 {$I SDL_revision.inc}                     // 3.1.6-prev
+{$I SDL_stdinc.inc}                       // 3.1.6-prev (unfinished)
+{$I SDL_rect.inc}                         // 3.1.6-prev
+{$I SDL_properties.inc}                   // 3.1.6-prev
+{$I SDL_pixels.inc}                       // 3.1.6-prev
+{$I SDL_blendmode.inc}                    // 3.1.6-prev
+{$I SDL_iostream.inc}                     // 3.1.6-prev (unfinished)
+{$I SDL_surface.inc}                      // 3.1.6-prev
+{$I SDL_video.inc}                        // 3.1.6-prev
+{$I SDL_render.inc}                       // 3.1.6-prev
+
 
 implementation
 
@@ -112,6 +124,82 @@ begin
     Result:=True
   else
     Result:=False;
+end;
+
+{ Macros from SDL_rect.h }
+procedure SDL_RectToFRect(const rect: PSDL_Rect; frect: PSDL_FRect);
+begin
+  frect^.x:=cfloat(rect^.x);
+  frect^.y:=cfloat(rect^.y);
+  frect^.w:=cfloat(rect^.w);
+  frect^.h:=cfloat(rect^.h);
+end;
+
+function SDL_PointInRect(const p: PSDL_Point; const r: PSDL_Rect): cbool;
+begin
+  Result :=
+    (p <> nil) and (r <> nil) and (p^.x >= r^.x) and (p^.x < (r^.x + r^.w)) and
+    (p^.y >= r^.y) and (p^.y < (r^.y + r^.h));
+end;
+
+function SDL_RectEmpty(const r: PSDL_Rect): cbool;
+begin
+  Result := (r = nil) or (r^.w <= 0) or (r^.h <= 0);
+end;
+
+function SDL_RectsEqual(const a: PSDL_Rect; const b: PSDL_Rect): cbool;
+begin
+  Result := (a <> nil) and (b <> nil) and (a^.x = b^.x) and (a^.y = b^.y) and
+    (a^.w = b^.w) and (a^.h = b^.h);
+end;
+
+function SDL_PointInRectFloat(const p: PSDL_FPoint; const r: PSDL_FRect): cbool;
+begin
+  Result :=
+    (p <> nil) and (r <> nil) and (p^.x >= r^.x) and (p^.x <= (r^.x + r^.w)) and
+    (p^.y >= r^.y) and (p^.y <= (r^.y + r^.h));
+end;
+
+function SDL_RectEmptyFloat(const r: PSDL_FRect): cbool;
+begin
+  Result := (r = nil) or (r^.w < cfloat(0.0)) or (r^.h < cfloat(0.0));
+end;
+
+function SDL_RectsEqualEpsilon(const a: PSDL_Frect; const b: PSDL_FRect;
+  const epsilon: cfloat): cbool;
+begin
+  Result :=
+    (a <> nil) and (b <> nil) and ((a = b) or
+    ((SDL_fabsf(a^.x - b^.x) <= epsilon) and
+    (SDL_fabsf(a^.y - b^.y) <= epsilon) and
+    (SDL_fabsf(a^.w - b^.w) <= epsilon) and
+    (SDL_fabsf(a^.h - b^.h) <= epsilon)));
+end;
+
+function SDL_RectsEqualFloat(const a: PSDL_FRect; b: PSDL_FRect): cbool;
+begin
+  Result := SDL_RectsEqualEpsilon(a, b, SDL_FLT_EPSILON);
+end;
+
+{ Macros from SDL_video.h }
+function SDL_WINDOWPOS_UNDEFINED_DISPLAY(X: Integer): Integer;
+begin
+  Result := (SDL_WINDOWPOS_CENTERED_MASK or X);
+end;
+
+function SDL_WINDOWPOS_ISUNDEFINED(X: Integer): Boolean;
+begin
+  Result := (X and $FFFF0000) = SDL_WINDOWPOS_UNDEFINED_MASK;
+end;
+
+function SDL_WINDOWPOS_CENTERED_DISPLAY(X: Integer): Integer;
+begin
+  Result := (SDL_WINDOWPOS_CENTERED_MASK or X);
+end;
+
+function SDL_WINDOWPOS_ISCENTERED(X: Integer): Boolean;
+begin
+  Result := (X and $FFFF0000) = SDL_WINDOWPOS_CENTERED_MASK;
 end;
 
 end.
