@@ -88,6 +88,7 @@ const
 {$I SDL_surface.inc}                      // 3.1.6-prev
 {$I SDL_video.inc}                        // 3.1.6-prev
 {$I SDL_render.inc}                       // 3.1.6-prev
+{$I SDL_timer.inc}                        // 3.1.6-prev (unfinished)
 
 
 implementation
