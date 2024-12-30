@@ -89,6 +89,7 @@ const
 {$I SDL_video.inc}                        // 3.1.6-prev
 {$I SDL_render.inc}                       // 3.1.6-prev
 {$I SDL_timer.inc}                        // 3.1.6-prev (unfinished)
+{$I SDL_error.inc}                        // 3.1.6-prev
 
 
 implementation
