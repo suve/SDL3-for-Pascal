@@ -52,7 +52,7 @@
 type
   PPSDL_InitFlags = ^PSDL_InitFlags;
   PSDL_InitFlags = ^TSDL_InitFlags;
-  TSDL_InitFlags = cuint32;
+  TSDL_InitFlags = type cuint32;
 
 const
   SDL_INIT_AUDIO = TSDL_InitFlags($00000010);    { `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS`  }
