@@ -31,6 +31,8 @@ Exception: Replace `*char` by `PAnsiChar`.
 
 ## Defines
 
+### Basic Defines
+
 C:
 
 ```c
@@ -59,8 +61,65 @@ const
   SDL_HAT_LEFTUP    = SDL_HAT_LEFT or SDL_HAT_UP;
   SDL_HAT_LEFTDOWN  = SDL_HAT_LEFT or SDL_HAT_DOWN;
 ```
+### Basic Types
 
-## Enums
+C:
+
+```c
+typedef Uint32 SDL_WindowID;
+```
+
+Pascal:
+
+```pascal
+type
+  PPSDL_WindowID = ^PSDL_WindowID;
+  PSDL_WindowID = ^TSDL_WindowID;
+  TSDL_WindowID = cuint32;
+```
+Always add the single pointer and the double pointer of a type.
+
+### Typed Aliases
+
+Often in there are defines which are clearly associated with a SDL type.
+
+C:
+```
+typedef Uint32 SDL_InitFlags;
+
+#define SDL_INIT_AUDIO      0x00000010u /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */
+#define SDL_INIT_VIDEO      0x00000020u /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS` */
+#define SDL_INIT_JOYSTICK   0x00000200u /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS`, should be initialized on the same thread as SDL_INIT_VIDEO on Windows if you don't set SDL_HINT_JOYSTICK_THREAD */
+#define SDL_INIT_HAPTIC     0x00001000u
+#define SDL_INIT_GAMEPAD    0x00002000u /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
+#define SDL_INIT_EVENTS     0x00004000u
+#define SDL_INIT_SENSOR     0x00008000u /**< `SDL_INIT_SENSOR` implies `SDL_INIT_EVENTS` */
+#define SDL_INIT_CAMERA     0x00010000u /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
+```
+
+Pascal:
+
+```pascal
+type
+  PPSDL_InitFlags = ^PSDL_InitFlags;
+  PSDL_InitFlags = ^TSDL_InitFlags;
+  TSDL_InitFlags = type cuint32;
+
+const
+  SDL_INIT_AUDIO = TSDL_InitFlags($00000010);    { `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS`  }
+  SDL_INIT_VIDEO = TSDL_InitFlags($00000020);    { `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS`  }
+  SDL_INIT_JOYSTICK = TSDL_InitFlags($00000200); { `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS`, should be initialized on the same thread as SDL_INIT_VIDEO on Windows if you don't set SDL_HINT_JOYSTICK_THREAD  }
+  SDL_INIT_HAPTIC = TSDL_InitFlags($00001000);
+  SDL_INIT_GAMEPAD = TSDL_InitFlags($00002000);  { `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK`  }
+  SDL_INIT_EVENTS = TSDL_InitFlags($00004000);
+  SDL_INIT_SENSOR = TSDL_InitFlags($00008000);   { `SDL_INIT_SENSOR` implies `SDL_INIT_EVENTS`  }
+  SDL_INIT_CAMERA = TSDL_InitFlags($00010000);   { `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS`  }
+```
+1. The translated type gets a typed alias (here: ...= **type** cuint32 instead of just ...= cuint32).
+
+2. The (const) values are typed accordingly.
+
+### Enums
 
 C:
 
