@@ -210,6 +210,24 @@ function SDL_JoystickNameForIndex(device_index: cint): PAnsiChar; cdecl;
   external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_JoystickNameForIndex' {$ENDIF} {$ENDIF};
 ```
 
+### Variadic Functions
+C:
+```c
+extern SDL_DECLSPEC void SDLCALL SDL_Log(const char *fmt, ...);
+```
+
+Pascal:
+
+```pascal
+procedure SDL_Log(fmt: PAnsiChar; Args: array of const); cdecl; overload;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_Log' {$ENDIF} {$ENDIF};
+procedure SDL_Log(fmt: PAnsiChar); cdecl; overload;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_Log' {$ENDIF} {$ENDIF};
+```
+A variadic C function expands to two overloaded Pascal functions. One which
+has no variadic part and one which translates the variadic part (...) to an
+array of const.
+
 ## C Macros
 
 Macros are pre-processed constructs in C which have no analogue in Pascal.
