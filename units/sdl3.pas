@@ -108,10 +108,7 @@ end;
 
 function SDL_VERSION_ATLEAST(X, Y, Z: Integer): Boolean;
 begin
-  if (SDL_VERSION >= SDL_VERSIONNUM(X, Y, Z)) then
-    Result:=True
-  else
-    Result:=False;
+  Result := SDL_VERSION >= SDL_VERSIONNUM(X, Y, Z);
 end;
 
 end.
