@@ -45,7 +45,7 @@
 type
   PPSDL_DisplayID = ^PSDL_DisplayID;
   PSDL_DisplayID = ^TSDL_DisplayID;
-  TSDL_DisplayID = cuint32;
+  TSDL_DisplayID = type cuint32;
 
 {*
  * This is a unique ID for a window.
@@ -56,7 +56,7 @@ type
   }
   PPSDL_WindowID = ^PSDL_WindowID;
   PSDL_WindowID = ^TSDL_WindowID;
-  TSDL_WindowID = cuint32;
+  TSDL_WindowID = type cuint32;
 
 { Global video properties...  }
 
@@ -85,7 +85,7 @@ const
 type
   PPSDL_SystemTheme = ^PSDL_SystemTheme;
   PSDL_SystemTheme = ^TSDL_SystemTheme;
-  TSDL_SystemTheme =  Integer;
+  TSDL_SystemTheme = type Integer;
 const
   SDL_SYSTEM_THEME_UNKNOWN = TSDL_SystemTheme(0);  {*< Unknown system theme  }
   SDL_SYSTEM_THEME_LIGHT = TSDL_SystemTheme(1);    {*< Light colored system theme  }
@@ -129,7 +129,7 @@ type
   }
   PPSDL_DisplayOrientation = ^PSDL_DisplayOrientation;
   PSDL_DisplayOrientation = ^TSDL_DisplayOrientation;
-  TSDL_DisplayOrientation =  Integer;
+  TSDL_DisplayOrientation =  type Integer;
 const
   SDL_ORIENTATION_UNKNOWN = TSDL_DisplayOrientation(0);              {*< The display orientation can't be determined  }
   SDL_ORIENTATION_LANDSCAPE = TSDL_DisplayOrientation(1);            {*< The display is in landscape mode, with the right side up, relative to portrait mode  }
@@ -163,7 +163,7 @@ type
 type
   PPSDL_WindowFlags = ^PSDL_WindowFlags;
   PSDL_WindowFlags = ^TSDL_WindowFlags;
-  TSDL_WindowFlags = cuint64;
+  TSDL_WindowFlags = type cuint64;
 
 const
   SDL_WINDOW_FULLSCREEN = TSDL_WindowFlags($0000000000000001);              {*< window is in fullscreen mode  }
@@ -221,7 +221,7 @@ function SDL_WINDOWPOS_ISCENTERED(X: Integer): Boolean;
 type
   PPSDL_FlashOperation = ^PSDL_FlashOperation;
   PSDL_FlashOperation = ^TSDL_FlashOperation;
-  TSDL_FlashOperation =  Integer;
+  TSDL_FlashOperation =  type Integer;
   const
     SDL_FLASH_CANCEL = TSDL_FlashOperation(0);              {*< Cancel any window flash state  }
     SDL_FLASH_BRIEFLY = TSDL_FlashOperation(1);             {*< Flash the window briefly to get attention  }
@@ -246,23 +246,23 @@ type
   }
   PPSDL_EGLDisplay = ^PSDL_EGLDisplay;
   PSDL_EGLDisplay = ^TSDL_EGLDisplay;
-  TSDL_EGLDisplay = pointer;
+  TSDL_EGLDisplay = type Pointer;
 
   PPSDL_EGLConfig = ^PSDL_EGLConfig;
   PSDL_EGLConfig = ^TSDL_EGLConfig;
-  TSDL_EGLConfig = pointer;
+  TSDL_EGLConfig = type Pointer;
 
   PPSDL_EGLSurface = ^PSDL_EGLSurface;
   PSDL_EGLSurface = ^TSDL_EGLSurface;
-  TSDL_EGLSurface = pointer;
+  TSDL_EGLSurface = type Pointer;
 
   PPSDL_EGLAttrib = ^PSDL_EGLAttrib;
   PSDL_EGLAttrib = ^TSDL_EGLAttrib;
-  TSDL_EGLAttrib = cintptr_t;
+  TSDL_EGLAttrib = type cintptr_t;
 
   PPSDL_EGLint = ^PSDL_EGLint;
   PSDL_EGLint = ^TSDL_EGLint;
-  TSDL_EGLint = cint;
+  TSDL_EGLint = type cint;
 
 {*
  * EGL platform attribute initialization callback.
