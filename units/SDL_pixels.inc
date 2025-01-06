@@ -21,7 +21,7 @@ const
  *
  * \sa SDL_ALPHA_TRANSPARENT_FLOAT
   }
-  SDL_ALPHA_OPAQUE_FLOAT = 1.0;
+  SDL_ALPHA_OPAQUE_FLOAT = cfloat(1.0);
 
 {*
  * A fully transparent 8-bit alpha value.
@@ -39,7 +39,7 @@ const
  *
  * \sa SDL_ALPHA_OPAQUE_FLOAT
   }
-  SDL_ALPHA_TRANSPARENT_FLOAT = 0.0;
+  SDL_ALPHA_TRANSPARENT_FLOAT = cfloat(0.0);
 
     {*
      * Pixel type.
