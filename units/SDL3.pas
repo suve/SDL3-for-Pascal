@@ -88,7 +88,7 @@ const
 {$I SDL_surface.inc}                      // 3.1.6-prev
 {$I SDL_video.inc}                        // 3.1.6-prev
 {$I SDL_render.inc}                       // 3.1.6-prev
-{$I SDL_timer.inc}                        // 3.1.6-prev (unfinished)
+{$I SDL_timer.inc}                        // 3.1.6-prev
 {$I SDL_error.inc}                        // 3.1.6-prev
 
 
@@ -181,6 +181,37 @@ end;
 function SDL_RectsEqualFloat(const a: PSDL_FRect; b: PSDL_FRect): cbool;
 begin
   Result := SDL_RectsEqualEpsilon(a, b, SDL_FLT_EPSILON);
+end;
+
+{ Macros from SDL_timer.h }
+function SDL_SECONDS_TO_NS(S: Integer): Integer;
+begin
+  SDL_SECONDS_TO_NS:=(cuint64(S))*SDL_NS_PER_SECOND;
+end;
+
+function SDL_NS_TO_SECONDS(NS: Integer): Integer;
+begin
+  SDL_NS_TO_SECONDS:=NS div SDL_NS_PER_SECOND;
+end;
+
+function SDL_MS_TO_NS(MS: Integer): Integer;
+begin
+  SDL_MS_TO_NS:=(cuint64(MS))*SDL_NS_PER_MS;
+end;
+
+function SDL_NS_TO_MS(NS: Integer): Integer;
+begin
+  SDL_NS_TO_MS:=NS div SDL_NS_PER_MS;
+end;
+
+function SDL_US_TO_NS(US: Integer): Integer;
+begin
+  SDL_US_TO_NS:=(cuint64(US))*SDL_NS_PER_US;
+end;
+
+function SDL_NS_TO_US(NS: Integer): Integer;
+begin
+  SDL_NS_TO_US:=NS div SDL_NS_PER_US;
 end;
 
 { Macros from SDL_video.h }
