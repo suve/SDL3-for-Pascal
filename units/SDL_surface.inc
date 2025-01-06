@@ -35,13 +35,13 @@
 type
   PPSDL_SurfaceFlags = ^PSDL_SurfaceFlags;
   PSDL_SurfaceFlags = ^TSDL_SurfaceFlags;
-  TSDL_SurfaceFlags = cuint32;
+  TSDL_SurfaceFlags = type cuint32;
 
 const
-  SDL_SURFACE_PREALLOCATED = $00000001;    {*< Surface uses preallocated pixel memory  }
-  SDL_SURFACE_LOCK_NEEDED = $00000002;     {*< Surface needs to be locked to access pixels  }
-  SDL_SURFACE_LOCKED = $00000004;          {*< Surface is currently locked  }
-  SDL_SURFACE_SIMD_ALIGNED = $00000008;    {*< Surface uses pixel memory allocated with SDL_aligned_alloc()  }
+  SDL_SURFACE_PREALLOCATED  = TSDL_SurfaceFlags($00000001);    {*< Surface uses preallocated pixel memory  }
+  SDL_SURFACE_LOCK_NEEDED  = TSDL_SurfaceFlags($00000002);     {*< Surface needs to be locked to access pixels  }
+  SDL_SURFACE_LOCKED  = TSDL_SurfaceFlags($00000004);          {*< Surface is currently locked  }
+  SDL_SURFACE_SIMD_ALIGNED  = TSDL_SurfaceFlags($00000008);    {*< Surface uses pixel memory allocated with SDL_aligned_alloc()  }
 
 {*
  * Evaluates to true if the surface needs to be locked before access.
@@ -66,10 +66,10 @@ end;
 type
   PPSDL_ScaleMode = ^PSDL_ScaleMode;
   PSDL_ScaleMode = ^TSDL_ScaleMode;
-  TSDL_ScaleMode =  Integer;
+  TSDL_ScaleMode =  type Integer;
 const
-  SDL_SCALEMODE_NEAREST = 0;   {*< nearest pixel sampling  }
-  SDL_SCALEMODE_LINEAR = 1;    {*< linear filtering  }
+  SDL_SCALEMODE_NEAREST = TSDL_ScaleMode(0);   {*< nearest pixel sampling  }
+  SDL_SCALEMODE_LINEAR = TSDL_ScaleMode(1);    {*< linear filtering  }
 
 {*
  * The flip mode.
@@ -79,11 +79,11 @@ const
 type
   PPSDL_FlipMode = ^PSDL_FlipMode;
   PSDL_FlipMode = ^TSDL_FlipMode;
-  TSDL_FlipMode =  Integer;
+  TSDL_FlipMode =  type Integer;
 const
-  SDL_FLIP_NONE = 0;           {*< Do not flip  }
-  SDL_FLIP_HORIZONTAL = 1;     {*< flip horizontally  }
-  SDL_FLIP_VERTICAL = 2;       {*< flip vertically  }
+  SDL_FLIP_NONE  = TSDL_FlipMode(0);           {*< Do not flip  }
+  SDL_FLIP_HORIZONTAL  = TSDL_FlipMode(1);     {*< flip horizontally  }
+  SDL_FLIP_VERTICAL  = TSDL_FlipMode(2);       {*< flip vertically  }
 
 {*
  * A collection of pixels used in software blitting.
