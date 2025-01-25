@@ -1,3 +1,28 @@
+{
+  This file is part of:
+
+    SDL3 for Pascal
+    (https://github.com/PascalGameDevelopment/SDL3-for-Pascal)
+    SPDX-License-Identifier: Zlib
+}
+
+{*
+ * # CategoryPen
+ *
+ * SDL pen event handling.
+ *
+ * SDL provides an API for pressure-sensitive pen (stylus and/or eraser)
+ * handling, e.g., for input and drawing tablets or suitably equipped mobile /
+ * tablet devices.
+ *
+ * To get started with pens, simply handle SDL_EVENT_PEN_* events. When a pen
+ * starts providing input, SDL will assign it a unique SDL_PenID, which will
+ * remain for the life of the process, as long as the pen stays connected.
+ *
+ * Pens may provide more than simple touch input; they might have other axes,
+ * such as pressure, tilt, rotation, etc.
+  }
+
 {*
  * SDL pen instance IDs.
  *
@@ -13,6 +38,7 @@ type
   PPSDL_PenID = ^PSDL_PenID;
   PSDL_PenID = ^TSDL_PenID;
   TSDL_PenID = cuint32;
+
 {*
  * Pen input flags, as reported by various pen events' `pen_state` field.
  *
@@ -21,6 +47,15 @@ type
   PPSDL_PenInputFlags = ^PSDL_PenInputFlags;
   PSDL_PenInputFlags = ^TSDL_PenInputFlags;
   TSDL_PenInputFlags = cuint32;
+
+const
+  SDL_PEN_INPUT_DOWN  = TSDL_PenInputFlags(1 shl 0);        {*< pen is pressed down  }
+  SDL_PEN_INPUT_BUTTON_1  = TSDL_PenInputFlags(1 shl 1);    {*< button 1 is pressed  }
+  SDL_PEN_INPUT_BUTTON_2  = TSDL_PenInputFlags(1 shl 2);    {*< button 2 is pressed  }
+  SDL_PEN_INPUT_BUTTON_3  = TSDL_PenInputFlags(1 shl 3);    {*< button 3 is pressed  }
+  SDL_PEN_INPUT_BUTTON_4  = TSDL_PenInputFlags(1 shl 4);    {*< button 4 is pressed  }
+  SDL_PEN_INPUT_BUTTON_5  = TSDL_PenInputFlags(1 shl 5);    {*< button 5 is pressed  }
+  SDL_PEN_INPUT_ERASER_TIP  = TSDL_PenInputFlags(1 shl 30); {*< eraser tip is used  }
 
  {*
  * Pen axis indices.

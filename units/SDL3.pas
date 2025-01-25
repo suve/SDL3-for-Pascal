@@ -95,7 +95,7 @@ const
 {$I SDL_mouse.inc}                        // 3.1.6-prev (unfinished)
 {$I SDL_keyboard.inc}                     // 3.1.6-prev (unfinished)
 {$I SDL_joystick.inc}                     // 3.1.6-prev (unfinished)
-{$I SDL_pen.inc}                          // 3.1.6-prev (unfinished)
+{$I SDL_pen.inc}                          // 3.1.6-prev
 {$I SDL_keycode.inc}                      // 3.1.6-prev (unfinished)
 {$I SDL_scancode.inc}                     // 3.1.6-prev
 {$I SDL_touch.inc}                        // 3.1.6-prev (unfinished)
