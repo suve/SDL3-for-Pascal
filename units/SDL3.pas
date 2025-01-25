@@ -91,7 +91,7 @@ const
 {$I SDL_error.inc}                        // 3.1.6-prev
 {$I SDL_power.inc}                        // 3.1.6-prev
 {$I SDL_audio.inc}                        // 3.1.6-prev (unfinished)
-{$I SDL_sensor.inc}                       // 3.1.6-prev (unfinished)
+{$I SDL_sensor.inc}                       // 3.1.6-prev
 {$I SDL_mouse.inc}                        // 3.1.6-prev (unfinished)
 {$I SDL_keyboard.inc}                     // 3.1.6-prev (unfinished)
 {$I SDL_joystick.inc}                     // 3.1.6-prev (unfinished)
