@@ -96,8 +96,8 @@ const
 {$I SDL_keyboard.inc}                     // 3.1.6-prev (unfinished)
 {$I SDL_joystick.inc}                     // 3.1.6-prev (unfinished)
 {$I SDL_pen.inc}                          // 3.1.6-prev
-{$I SDL_keycode.inc}                      // 3.1.6-prev (unfinished)
 {$I SDL_scancode.inc}                     // 3.1.6-prev
+{$I SDL_keycode.inc}                      // 3.1.6-prev
 {$I SDL_touch.inc}                        // 3.1.6-prev (unfinished)
 {$I SDL_camera.inc}                       // 3.1.6-prev (unfinished)
 {$I SDL_events.inc}                       // 3.1.6-prev
@@ -224,6 +224,12 @@ end;
 function SDL_NS_TO_US(NS: Integer): Integer;
 begin
   SDL_NS_TO_US:=NS div SDL_NS_PER_US;
+end;
+
+{ Macros from SDL_keycode.h }
+function SDL_SCANCODE_TO_KEYCODE(X: TSDL_Scancode): TSDL_Keycode;
+begin
+  Result:=X or SDLK_SCANCODE_MASK;
 end;
 
 { Macros from SDL_video.h }
