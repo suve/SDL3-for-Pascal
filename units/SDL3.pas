@@ -79,6 +79,7 @@ const
 {$I SDL_log.inc}                          // 3.1.6-prev
 {$I SDL_version.inc}                      // 3.1.6-prev
 {$I SDL_revision.inc}                     // 3.1.6-prev
+{$I SDL_guid.inc}                         // 3.1.6-prev
 {$I SDL_stdinc.inc}                       // 3.1.6-prev (unfinished)
 {$I SDL_rect.inc}                         // 3.1.6-prev
 {$I SDL_properties.inc}                   // 3.1.6-prev
