@@ -91,6 +91,7 @@ const
 {$I SDL_timer.inc}                        // 3.1.6-prev
 {$I SDL_error.inc}                        // 3.1.6-prev
 {$I SDL_clipboard.inc}                    // 3.2.0
+{$I SDL_cpuinfo.inc}                      // 3.2.0
 
 
 implementation
