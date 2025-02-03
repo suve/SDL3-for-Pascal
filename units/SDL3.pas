@@ -90,6 +90,7 @@ const
 {$I SDL_render.inc}                       // 3.1.6-prev
 {$I SDL_timer.inc}                        // 3.1.6-prev
 {$I SDL_error.inc}                        // 3.1.6-prev
+{$I SDL_clipboard.inc}                    // 3.2.0
 
 
 implementation
