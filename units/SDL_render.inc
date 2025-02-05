@@ -1540,9 +1540,8 @@ function SDL_RenderCoordinatesToWindow(renderer: PSDL_Renderer; x: cfloat; y: cf
  *
  * \sa SDL_RenderCoordinatesFromWindow
   }
-{ #todo : SDL3-for-Pascal: Uncomment after publishing SDL_event.inc (defines PSDL_Event). }
-//function SDL_ConvertEventToRenderCoordinates(renderer: PSDL_Renderer; event: PSDL_Event): cbool; cdecl;
-//  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_ConvertEventToRenderCoordinates' {$ENDIF} {$ENDIF};
+function SDL_ConvertEventToRenderCoordinates(renderer: PSDL_Renderer; event: PSDL_Event): cbool; cdecl;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_ConvertEventToRenderCoordinates' {$ENDIF} {$ENDIF};
 
 {*
  * Set the drawing area for rendering on the current target.

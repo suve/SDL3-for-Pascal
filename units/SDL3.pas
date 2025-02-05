@@ -79,6 +79,7 @@ const
 {$I SDL_log.inc}                          // 3.1.6-prev
 {$I SDL_version.inc}                      // 3.1.6-prev
 {$I SDL_revision.inc}                     // 3.1.6-prev
+{$I SDL_guid.inc}                         // 3.1.6-prev
 {$I SDL_stdinc.inc}                       // 3.1.6-prev (unfinished)
 {$I SDL_rect.inc}                         // 3.1.6-prev
 {$I SDL_properties.inc}                   // 3.1.6-prev
@@ -87,9 +88,21 @@ const
 {$I SDL_iostream.inc}                     // 3.1.6-prev (unfinished)
 {$I SDL_surface.inc}                      // 3.1.6-prev
 {$I SDL_video.inc}                        // 3.1.6-prev
-{$I SDL_render.inc}                       // 3.1.6-prev
 {$I SDL_timer.inc}                        // 3.1.6-prev
 {$I SDL_error.inc}                        // 3.1.6-prev
+{$I SDL_power.inc}                        // 3.1.6-prev
+{$I SDL_audio.inc}                        // 3.1.6-prev
+{$I SDL_sensor.inc}                       // 3.1.6-prev
+{$I SDL_scancode.inc}                     // 3.1.6-prev
+{$I SDL_keycode.inc}                      // 3.1.6-prev
+{$I SDL_mouse.inc}                        // 3.1.6-prev
+{$I SDL_keyboard.inc}                     // 3.1.6-prev
+{$I SDL_joystick.inc}                     // 3.1.6-prev
+{$I SDL_pen.inc}                          // 3.1.6-prev
+{$I SDL_touch.inc}                        // 3.1.6-prev
+{$I SDL_camera.inc}                       // 3.1.6-prev
+{$I SDL_events.inc}                       // 3.1.6-prev
+{$I SDL_render.inc}                       // 3.1.6-prev
 
 
 implementation
@@ -212,6 +225,64 @@ end;
 function SDL_NS_TO_US(NS: Integer): Integer;
 begin
   SDL_NS_TO_US:=NS div SDL_NS_PER_US;
+end;
+
+{ Macros from SDL_audio.h }
+function SDL_DEFINE_AUDIO_FORMAT(signed: cuint16; bigendian: cuint16;
+  float: cuint16; size: Integer): TSDL_AudioFormat;
+begin
+  Result:=(signed shl 15) or (bigendian shl 12) or (float shl 8) or (size and SDL_AUDIO_MASK_BITSIZE);
+end;
+
+function SDL_AUDIO_BITSIZE(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=x and SDL_AUDIO_MASK_BITSIZE;
+end;
+
+function SDL_AUDIO_BYTESIZE(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=SDL_AUDIO_BITSIZE(x) div 8;
+end;
+
+function SDL_AUDIO_ISFLOAT(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=x and SDL_AUDIO_MASK_FLOAT;
+end;
+
+function SDL_AUDIO_ISBIGENDIAN(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=x and SDL_AUDIO_MASK_BIG_ENDIAN;
+end;
+
+function SDL_AUDIO_ISLITTLEENDIAN(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=not(x) and SDL_AUDIO_MASK_BIG_ENDIAN;
+end;
+
+function SDL_AUDIO_ISSIGNED(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=x and SDL_AUDIO_MASK_SIGNED;
+end;
+
+function SDL_AUDIO_ISINT(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=not(x) and SDL_AUDIO_MASK_FLOAT;
+end;
+
+function SDL_AUDIO_ISUNSIGNED(x: TSDL_AudioFormat): Integer;
+begin
+  Result:=not(x) and SDL_AUDIO_MASK_SIGNED;
+end;
+
+function SDL_AUDIO_FRAMESIZE(x: TSDL_AudioSpec): Integer;
+begin
+  Result:=SDL_AUDIO_BYTESIZE(x.format * x.channels);
+end;
+
+{ Macros from SDL_keycode.h }
+function SDL_SCANCODE_TO_KEYCODE(X: TSDL_Scancode): TSDL_Keycode;
+begin
+  Result:=X or SDLK_SCANCODE_MASK;
 end;
 
 { Macros from SDL_video.h }
