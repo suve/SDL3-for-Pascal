@@ -103,6 +103,11 @@ const
 {$I SDL_camera.inc}                       // 3.1.6-prev
 {$I SDL_events.inc}                       // 3.1.6-prev
 {$I SDL_render.inc}                       // 3.1.6-prev
+{$I SDL_clipboard.inc}                    // 3.2.0
+{$I SDL_cpuinfo.inc}                      // 3.2.0
+{$I SDL_dialog.inc}                       // 3.2.0
+{$I SDL_time.inc}                         // 3.2.0
+{$I SDL_filesystem.inc}                   // 3.2.0
 
 
 implementation
