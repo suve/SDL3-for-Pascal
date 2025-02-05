@@ -9,3 +9,4 @@
 
 { Compiler defines }
 {$DEFINE SDL} // define "SDL" symbol
+{$DEFINE WANT_CWCHAR_T} // define C's wchar_t types
