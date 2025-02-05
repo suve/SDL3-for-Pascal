@@ -110,6 +110,7 @@ const
 {$I SDL_dialog.inc}                       // 3.2.0
 {$I SDL_time.inc}                         // 3.2.0
 {$I SDL_filesystem.inc}                   // 3.2.0
+{$I SDL_atomic.inc}                       // 3.2.0
 
 
 implementation
@@ -311,6 +312,17 @@ end;
 function SDL_WINDOWPOS_ISCENTERED(X: Integer): Boolean;
 begin
   Result := (X and $FFFF0000) = SDL_WINDOWPOS_CENTERED_MASK;
+end;
+
+{ Macros from SDL_atomic.h }
+function SDL_AtomicIncRef(a: PSDL_AtomicInt): cint;
+begin
+  SDL_AtomicIncRef:=SDL_AddAtomicInt(a,1);
+end;
+
+function SDL_AtomicDecRef(a: PSDL_AtomicInt): cbool;
+begin
+  SDL_AtomicDecRef:=(SDL_AddAtomicInt(a,-1)=1);
 end;
 
 end.
