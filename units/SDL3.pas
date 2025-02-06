@@ -85,7 +85,7 @@ const
 {$I SDL_properties.inc}                   // 3.1.6-prev
 {$I SDL_pixels.inc}                       // 3.1.6-prev
 {$I SDL_blendmode.inc}                    // 3.1.6-prev
-{$I SDL_iostream.inc}                     // 3.1.6-prev (unfinished)
+{$I SDL_iostream.inc}                     // 3.2.0
 {$I SDL_surface.inc}                      // 3.1.6-prev
 {$I SDL_video.inc}                        // 3.1.6-prev
 {$I SDL_timer.inc}                        // 3.1.6-prev
