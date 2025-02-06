@@ -82,6 +82,7 @@ const
 {$I SDL_guid.inc}                         // 3.1.6-prev
 {$I SDL_hints.inc}                        // 3.2.0
 {$I SDL_stdinc.inc}                       // 3.1.6-prev (unfinished)
+{$I SDL_loadso.inc}                       // 3.2.0
 {$I SDL_rect.inc}                         // 3.1.6-prev
 {$I SDL_properties.inc}                   // 3.1.6-prev
 {$I SDL_pixels.inc}                       // 3.1.6-prev
@@ -115,6 +116,7 @@ const
 {$I SDL_filesystem.inc}                   // 3.2.0
 {$I SDL_atomic.inc}                       // 3.2.0
 {$I SDL_hidapi.inc}                       // 3.2.0
+
 
 
 implementation
