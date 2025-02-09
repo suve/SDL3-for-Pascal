@@ -122,6 +122,7 @@ const
 {$I SDL_hidapi.inc}                       // 3.2.0
 {$I SDL_metal.inc}                        // 3.2.0
 {$I SDL_vulkan.inc}                       // 3.2.0
+{$I SDL_thread.inc}                       // 3.2.0
 
 
 
@@ -335,6 +336,17 @@ end;
 function SDL_AtomicDecRef(a: PSDL_AtomicInt): cbool;
 begin
   SDL_AtomicDecRef:=(SDL_AddAtomicInt(a,-1)=1);
+end;
+
+{ Macros from SDL_thread.h }
+function SDL_CreateThread(fn: TSDL_ThreadFunction; name: PAnsiChar; data: Pointer): PSDL_Thread;
+begin
+  SDL_CreateThread:=SDL_CreateThreadRuntime(fn,name,data,TSDL_FunctionPointer(SDL_BeginThreadFunction),TSDL_FunctionPointer(SDL_EndThreadFunction));
+end;
+
+function SDL_CreateThreadWithProperties(props: TSDL_PropertiesID): PSDL_Thread;
+begin
+  SDL_CreateThreadWithProperties:=SDL_CreateThreadWithPropertiesRuntime(props,TSDL_FunctionPointer(SDL_BeginThreadFunction),TSDL_FunctionPointer(SDL_EndThreadFunction));
 end;
 
 end.
