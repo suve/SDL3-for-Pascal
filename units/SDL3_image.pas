@@ -98,7 +98,7 @@ function SDL_IMAGE_VERSION: Integer;
 {*
  * This macro will evaluate to true if compiled with SDL_image at least X.Y.Z.
   }
-function SDL_VERSION_ATLEAST(X, Y, Z: Integer): Boolean;
+function SDL_IMAGE_VERSION_ATLEAST(X, Y, Z: Integer): Boolean;
 
 {*
  * This function gets the version of the dynamically linked SDL_image library.
@@ -2209,7 +2209,7 @@ begin
   Result:=SDL_VERSIONNUM(SDL_IMAGE_MAJOR_VERSION, SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_MICRO_VERSION);
 end;
 
-function SDL_VERSION_ATLEAST(X, Y, Z: Integer): Boolean;
+function SDL_IMAGE_VERSION_ATLEAST(X, Y, Z: Integer): Boolean;
 begin
   Result:=((SDL_IMAGE_MAJOR_VERSION >= X) and
            ((SDL_IMAGE_MAJOR_VERSION > X) or (SDL_IMAGE_MINOR_VERSION >= Y)) and
