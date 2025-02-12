@@ -23,72 +23,72 @@ unit SDL3_ttf;
 
 interface
 
-  {$IFDEF WINDOWS}
-    uses
-      SDL3,
-      {$IFDEF FPC}
-      ctypes,
-      {$ENDIF}
-      Windows;
-  {$ENDIF}
+{$IFDEF WINDOWS}
+  uses
+    SDL3,
+    {$IFDEF FPC}
+    ctypes,
+    {$ENDIF}
+    Windows;
+{$ENDIF}
 
-  {$IF DEFINED(UNIX) AND NOT DEFINED(ANDROID)}
-    uses
-      SDL3,
-      {$IFDEF FPC}
-      ctypes,
-      UnixType,
-      {$ENDIF}
-      {$IFDEF DARWIN}
-      CocoaAll;
-      {$ELSE}
-      X,
-      XLib;
-      {$ENDIF}
-  {$ENDIF}
+{$IF DEFINED(UNIX) AND NOT DEFINED(ANDROID)}
+  uses
+    SDL3,
+    {$IFDEF FPC}
+    ctypes,
+    UnixType,
+    {$ENDIF}
+    {$IFDEF DARWIN}
+    CocoaAll;
+    {$ELSE}
+    X,
+    XLib;
+    {$ENDIF}
+{$ENDIF}
 
-  {$IF DEFINED(UNIX) AND DEFINED(ANDROID) AND DEFINED(FPC)}
-    uses
-      SDL3,
-      ctypes,
-      UnixType;
-  {$ENDIF}
+{$IF DEFINED(UNIX) AND DEFINED(ANDROID) AND DEFINED(FPC)}
+  uses
+    SDL3,
+    ctypes,
+    UnixType;
+{$ENDIF}
 
 const
 
-  {$IFDEF WINDOWS}
-    IMG_LibName = 'SDL3_ttf.dll';
-  {$ENDIF}
+{$IFDEF WINDOWS}
+  IMG_LibName = 'SDL3_ttf.dll';
+{$ENDIF}
 
-  {$IFDEF UNIX}
-    {$IFDEF DARWIN}
-      IMG_LibName = 'libSDL3_ttf.dylib';
-      {$IFDEF FPC}
-        {$LINKLIB libSDL3}
-      {$ENDIF}
-    {$ELSE}
-      {$IFDEF FPC}
-        IMG_LibName = 'libSDL3_ttf.so';
-      {$ELSE}
-        IMG_LibName = 'libSDL3_ttf.so.0';
-      {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFDEF MACOS}
-    IMG_LibName = 'SDL3_ttf';
+{$IFDEF UNIX}
+  {$IFDEF DARWIN}
+    IMG_LibName = 'libSDL3_ttf.dylib';
     {$IFDEF FPC}
-      {$linklib libSDL3}
+      {$LINKLIB libSDL3}
+    {$ENDIF}
+  {$ELSE}
+    {$IFDEF FPC}
+      IMG_LibName = 'libSDL3_ttf.so';
+    {$ELSE}
+      IMG_LibName = 'libSDL3_ttf.so.0';
     {$ENDIF}
   {$ENDIF}
+{$ENDIF}
 
-  {*
-   * Printable format: "%d.%d.%d", MAJOR, MINOR, MICRO
-    }
-  const
-    SDL_TTF_MAJOR_VERSION = 3;
-    SDL_TTF_MINOR_VERSION = 1;
-    SDL_TTF_MICRO_VERSION = 0;
+{$IFDEF MACOS}
+  IMG_LibName = 'SDL3_ttf';
+  {$IFDEF FPC}
+    {$linklib libSDL3}
+  {$ENDIF}
+{$ENDIF}
+
+{*
+ * Printable format: "%d.%d.%d", MAJOR, MINOR, MICRO
+  }
+const
+  SDL_TTF_MAJOR_VERSION = 3;
+  SDL_TTF_MINOR_VERSION = 1;
+  SDL_TTF_MICRO_VERSION = 0;
 
 {*
  * This is the version number macro for the current SDL_ttf version.
@@ -2911,6 +2911,8 @@ procedure TTF_Quit; cdecl;
   }
 function TTF_WasInit: cint; cdecl;
   external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_TTF_WasInit' {$ENDIF} {$ENDIF};
+
+{$I SDL_textengine.inc}                        // 3.1.0-prev
 
 implementation
 
