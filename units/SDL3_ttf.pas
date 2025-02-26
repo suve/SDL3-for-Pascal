@@ -17,6 +17,8 @@ unit SDL3_ttf;
  * available at: https://www.freetype.org/
   }
 
+{ #note: SDL3-for-Pascal: Based on file SDL_textengine.h version 3.1.0 (preview). }
+
 {$DEFINE SDL_TTF}
 
 {$I sdl.inc}
@@ -2911,8 +2913,6 @@ procedure TTF_Quit; cdecl;
   }
 function TTF_WasInit: cint; cdecl;
   external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_TTF_WasInit' {$ENDIF} {$ENDIF};
-
-{$I SDL_textengine.inc}                        // 3.1.0-prev
 
 implementation
 
