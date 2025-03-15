@@ -49,7 +49,13 @@ The version number/tag (see [tags](https://github.com/PascalGameDevelopment/SDL3
 
 ### v0.x (work in progress)
 
-- first release of working units (version number will reflect progress and stability of first release)
+- adds SDL3_ttf unit
+
+### v0.4 (15/03/2025)
+
+- adds working SDL3 unit (rather complete)
+- adds working SDL3_image unit
+- units seem stable
 
 ## License
 
