@@ -213,5 +213,5 @@ function SDL_fabsf(x: cfloat): cfloat; cdecl;
  * \since This datatype is available since SDL 3.1.3.
   }
 type
-  TSDL_FunctionPointer = procedure (parameter:Pointer); cdecl;
+  TSDL_FunctionPointer = procedure(parameter:Pointer); cdecl;
 
