@@ -13,7 +13,7 @@ Simply add the units to your include path. You can achieve this by:
 
 Use the `SDL3` unit for the main SDL3 library (should be always needed). Units for the other SDL3 libraries are (or will be) also provided:
  - [`SDL3_image`](https://github.com/libsdl-org/SDL_image)
- - [`SDL3_ttf`](https://github.com/libsdl-org/SDL_ttf) (pending, PR #19)
+ - [`SDL3_ttf`](https://github.com/libsdl-org/SDL_ttf)
  - [`SDL3_mixer`](https://github.com/libsdl-org/SDL_mixer) (not published yet)
  - [`SDL3_net`](https://github.com/libsdl-org/SDL_net) (not published yet)
  - [`SDL3_gfx`](https://github.com/sabdul-khabir/SDL3_gfx) (todo)
