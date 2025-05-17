@@ -51,7 +51,7 @@ const
     {$IFDEF DARWIN}
       SDL_LibName = 'libSDL3.dylib';
       {$IFDEF FPC}
-        {$LINKLIB libSDL2}
+        {$LINKLIB libSDL3}
       {$ENDIF}
     {$ELSE}
       {$IFDEF FPC}
