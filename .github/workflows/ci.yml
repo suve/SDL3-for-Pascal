@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  macos-15:
+    runs-on: macos-15
+    steps:
+      - name: Install FPC
+        run: |
+          brew update
+          brew install fpc
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Compile SDL3 unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3.pas
+          verbosity: ewnh
+      - name: Compile SDL3_image unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_image.pas
+          verbosity: ewnh
+      - name: Compile SDL3_ttf unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_ttf.pas
+          verbosity: ewnh
+      - name: Compile SDL3_textengine unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_textengine.pas
+          verbosity: ewnh
+
+  ubuntu-24-04:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install FPC
+        run: |
+           export DEBIAN_FRONTEND=noninteractive
+           sudo apt update
+           sudo apt install -y fpc
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Compile SDL3 unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3.pas
+          verbosity: ewnh
+      - name: Compile SDL3_image unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_image.pas
+          verbosity: ewnh
+      - name: Compile SDL3_ttf unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_ttf.pas
+          verbosity: ewnh
+      - name: Compile SDL3_textengine unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_textengine.pas
+          verbosity: ewnh
+
+  windows-2025:
+    runs-on: windows-2025
+    steps:
+      - name: Install Lazarus
+        run: |
+          choco install lazarus
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Compile SDL3 unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3.pas
+          verbosity: ewnh
+      - name: Compile SDL3_image unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_image.pas
+          verbosity: ewnh
+      - name: Compile SDL3_ttf unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_ttf.pas
+          verbosity: ewnh
+      - name: Compile SDL3_textengine unit
+        uses: suve/GHActions-FPC@v0.4.0
+        with:
+          source: units/SDL3_textengine.pas
+          verbosity: ewnh
