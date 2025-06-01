@@ -443,6 +443,8 @@ type
       direction: TSDL_MouseWheelDirection;   {*< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back  }
       mouse_x: cfloat;                       {*< X coordinate, relative to window  }
       mouse_y: cfloat;                       {*< Y coordinate, relative to window  }
+      integer_x: cint32;                     {*< The amount scrolled horizontally, accumulated to whole scroll "ticks" (added in 3.2.12) *}
+      integer_y: cint32;                     {*< The amount scrolled vertically, accumulated to whole scroll "ticks" (added in 3.2.12) *}
     end;
 
 {*
