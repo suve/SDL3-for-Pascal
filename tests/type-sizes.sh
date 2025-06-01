@@ -2,8 +2,21 @@
 
 set -eu -o pipefail
 
-cd "$(dirname "${0}")"
+if [ -t 1 ]; then
+	ANSI_BOLD="$(printf "\x1b[1m")"
+	ANSI_GREEN="$(printf "\x1b[32m")"
+	ANSI_RED="$(printf "\x1b[31m")"
+	ANSI_RESET="$(printf "\x1b[0m")"
+else
+	ANSI_BOLD=""
+	ANSI_GREEN=""
+	ANSI_RED=""
+	ANSI_RESET=""
+fi
 
+# -- cd to script directory
+
+cd "$(dirname "${0}")"
 SDL_UNITS_PATH="$(pwd)/../units/"
 
 TEMP_DIR="$(mktemp --directory)"
@@ -212,9 +225,9 @@ EXIT_CODE="${?}"
 
 echo ""
 if [ "${EXIT_CODE}" -eq 0 ]; then
-	echo "[ OK ] Outputs match"
+	echo "${ANSI_BOLD}[${ANSI_GREEN}PASS${ANSI_RESET}${ANSI_BOLD}]${ANSI_RESET} Outputs match"
 else
-	echo "[FAIL] Outputs differ!"
+	echo "${ANSI_BOLD}[${ANSI_RED}FAIL${ANSI_RESET}${ANSI_BOLD}]${ANSI_RESET} Outputs differ!"
 	echo "${DIFF}"
 fi
 
