@@ -37,14 +37,17 @@ jobs:
           source: units/SDL3_textengine.pas
           verbosity: ewnh
 
-  ubuntu-24-04:
-    runs-on: ubuntu-24.04
+  # This job runs inside a Fedora Rawhide container instead of straight
+  # on the Ubuntu runner, because (at the moment of writing this comment)
+  # the latest Ubuntu version supported by GitHub Actions is 24.04, which
+  # does not have an SDL3 package.
+  fedora-rawhide:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:rawhide
     steps:
       - name: Install FPC
         run: |
-           export DEBIAN_FRONTEND=noninteractive
-           sudo apt update
-           sudo apt install -y fpc
+           dnf install --assumeyes --setopt=install_weak_deps=False diffutils gcc fpc SDL3-devel
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Compile SDL3 unit
@@ -67,6 +70,8 @@ jobs:
         with:
           source: units/SDL3_textengine.pas
           verbosity: ewnh
+      - name: Run type-sizes test
+        run: ./tests/type-sizes.sh
 
   windows-2025:
     runs-on: windows-2025
