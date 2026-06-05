@@ -50,6 +50,7 @@ The version number/tag (see [tags](https://github.com/PascalGameDevelopment/SDL3
 ### v0.x (work in progress)
 
 - updates SDL3_ttf to v3.2.2
+- updates SDL3_mixer to v3.2.4
 
 ### v0.6 (04/05/2026)
 
