@@ -500,4 +500,72 @@ begin
   Result := (format <> 0) and (SDL_PIXELFLAG(format) <> 1)
 end;
 
+function SDL_DEFINE_COLORSPACE(
+  type_: TSDL_ColorType;
+  range: TSDL_ColorRange;
+  primaries: TSDL_ColorPrimaries;
+  transfer: TSDL_TransferCharacteristics;
+  matrix: TSDL_MatrixCoefficients;
+  chroma: TSDL_ChromaLocation
+): TSDL_Colorspace;
+begin
+  Result := (cuint32(type_) shl 28) or (cuint32(range) shl 24) or (cuint32(chroma) shl 20) or
+    (cuint32(primaries) shl 10) or (cuint32(transfer) shl 5) or (cuint32(matrix) shl 0)
+end;
+
+function SDL_COLORSPACETYPE(cspace: TSDL_Colorspace): TSDL_ColorType;
+begin
+  Result := (TSDL_ColorType(cspace) shr 28) and $0F
+end;
+
+function SDL_COLORSPACERANGE(cspace: TSDL_Colorspace): TSDL_ColorRange;
+begin
+  Result := (TSDL_ColorRange(cspace) shr 24) and $0F
+end;
+
+function SDL_COLORSPACECHROMA(cspace: TSDL_Colorspace): TSDL_ChromaLocation;
+begin
+  Result := (TSDL_ChromaLocation(cspace) shr 20) and $0F
+end;
+
+function SDL_COLORSPACEPRIMARIES(cspace: TSDL_Colorspace): TSDL_ColorPrimaries;
+begin
+  Result := (TSDL_ColorPrimaries(cspace) shr 10) and $1F
+end;
+
+function SDL_COLORSPACETRANSFER(cspace: TSDL_Colorspace): TSDL_TransferCharacteristics;
+begin
+  Result := (TSDL_TransferCharacteristics(cspace) shr 5) and $1F
+end;
+
+function SDL_COLORSPACEMATRIX(cspace: TSDL_Colorspace): TSDL_MatrixCoefficients;
+begin
+  Result := TSDL_MatrixCoefficients(cspace) and $1F
+end;
+
+function SDL_ISCOLORSPACE_MATRIX_BT601(cspace: TSDL_Colorspace): Boolean;
+begin
+  Result := (SDL_COLORSPACEMATRIX(cspace) = SDL_MATRIX_COEFFICIENTS_BT601) or (SDL_COLORSPACEMATRIX(cspace) = SDL_MATRIX_COEFFICIENTS_BT470BG)
+end;
+
+function SDL_ISCOLORSPACE_MATRIX_BT709(cspace: TSDL_Colorspace): Boolean;
+begin
+  Result := SDL_COLORSPACEMATRIX(cspace) = SDL_MATRIX_COEFFICIENTS_BT709
+end;
+
+function SDL_ISCOLORSPACE_MATRIX_BT2020_NCL(cspace: TSDL_Colorspace): Boolean;
+begin
+  Result := SDL_COLORSPACEMATRIX(cspace) = SDL_MATRIX_COEFFICIENTS_BT2020_NCL
+end;
+
+function SDL_ISCOLORSPACE_LIMITED_RANGE(cspace: TSDL_Colorspace): Boolean;
+begin
+  Result := SDL_COLORSPACERANGE(cspace) <> SDL_COLOR_RANGE_FULL
+end;
+
+function SDL_ISCOLORSPACE_FULL_RANGE(cspace: TSDL_Colorspace): Boolean;
+begin
+  Result := SDL_COLORSPACERANGE(cspace) = SDL_COLOR_RANGE_FULL
+end;
+
 end.
