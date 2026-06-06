@@ -360,5 +360,11 @@ begin
   SDL_CreateThreadWithProperties:=SDL_CreateThreadWithPropertiesRuntime(props,TSDL_FunctionPointer(SDL_BeginThreadFunction),TSDL_FunctionPointer(SDL_EndThreadFunction));
 end;
 
+{ Macros from SDL_mouse.h }
+function SDL_BUTTON_MASK(X: TSDL_MouseButtonFlags): TSDL_MouseButtonFlags;
+begin
+  Result := TSDL_MouseButtonFlags(1) shl (X-1)
+end;
+
 end.
 
