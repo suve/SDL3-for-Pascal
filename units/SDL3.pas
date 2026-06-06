@@ -372,4 +372,132 @@ begin
   Result := (cuint32(Ord(A)) shl 0) or (cuint32(Ord(B)) shl 8) or (cuint32(Ord(C)) shl 16) or (cuint32(Ord(D)) shl 24)
 end;
 
+{ Macros from SDL_pixels.h }
+function SDL_DEFINE_PIXELFOURCC(A, B, C, D: AnsiChar): TSDL_PixelFormat;
+begin
+  Result := SDL_FOURCC(A, B, C, D)
+end;
+
+function SDL_DEFINE_PIXELFORMAT(type_: TSDL_PixelType; order: Integer; layout: TSDL_PackedLayout; bits, bytes: Integer): TSDL_PixelFormat;
+begin
+  Result := (1 shl 28) or (type_ shl 24) or (order shl 20) or (layout shl 16) or (bits shl 8) or (bytes shl 0)
+end;
+
+function SDL_PIXELFLAG(format: TSDL_PixelFormat): Integer;
+begin
+  Result := (format shr 28) and $0F
+end;
+
+function SDL_PIXELTYPE(format: TSDL_PixelFormat): TSDL_PixelType;
+begin
+  Result := (format shr 24) and $0F
+end;
+
+function SDL_PIXELORDER(format: TSDL_PixelFormat): Integer;
+begin
+  Result := (format shr 20) and $0F
+end;
+
+function SDL_PIXELLAYOUT(format: TSDL_PixelFormat): TSDL_PackedLayout;
+begin
+  Result := (format shr 16) and $0F
+end;
+
+function SDL_BITSPERPIXEL(format: TSDL_PixelFormat): Integer;
+begin
+  If SDL_ISPIXELFORMAT_FOURCC(format) then
+    Result := 0
+  else
+    Result := (format shr 8) and $0F
+end;
+
+function SDL_BYTESPERPIXEL(format: TSDL_PixelFormat): Integer;
+begin
+  If SDL_ISPIXELFORMAT_FOURCC(format) then
+    If (format = SDL_PIXELFORMAT_YUY2) or (format = SDL_PIXELFORMAT_UYVY) or (format = SDL_PIXELFORMAT_YVYU) or (format = SDL_PIXELFORMAT_P010) then
+      Result := 2
+    else
+      Result := 1
+  else
+    Result := (format shr 0) and $0F
+end;
+
+function SDL_ISPIXELFORMAT_INDEXED(format: TSDL_PixelFormat): Boolean;
+begin
+  Result := (Not SDL_ISPIXELFORMAT_FOURCC(format)) and
+    (
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_INDEX1) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_INDEX2) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_INDEX4) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_INDEX8)
+    )
+end;
+
+function SDL_ISPIXELFORMAT_PACKED(format: TSDL_PixelFormat): Boolean;
+begin
+  Result := (Not SDL_ISPIXELFORMAT_FOURCC(format)) and
+    (
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_PACKED8) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_PACKED16) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_PACKED32)
+    )
+end;
+
+function SDL_ISPIXELFORMAT_ARRAY(format: TSDL_PixelFormat): Boolean;
+begin
+  Result := (Not SDL_ISPIXELFORMAT_FOURCC(format)) and
+    (
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYU8) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYU16) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYU32) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYF16) or
+      (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYF32)
+    )
+end;
+
+function SDL_ISPIXELFORMAT_10BIT(format: TSDL_PixelFormat): Boolean;
+begin
+  Result := (Not SDL_ISPIXELFORMAT_FOURCC(format)) and
+    (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_PACKED32) and
+    (SDL_PIXELLAYOUT(format) = SDL_PACKEDLAYOUT_2101010)
+end;
+
+function SDL_ISPIXELFORMAT_FLOAT(format: TSDL_PixelFormat): Boolean;
+begin
+  Result := (Not SDL_ISPIXELFORMAT_FOURCC(format)) and
+    ((SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYF16) or (SDL_PIXELTYPE(format) = SDL_PIXELTYPE_ARRAYF32))
+end;
+
+function SDL_ISPIXELFORMAT_ALPHA(format: TSDL_PixelFormat): Boolean;
+begin
+  Result :=
+    (
+      (
+        SDL_ISPIXELFORMAT_PACKED(format) and
+        (
+          (SDL_PIXELORDER(format) = SDL_PACKEDORDER_ARGB) or
+          (SDL_PIXELORDER(format) = SDL_PACKEDORDER_RGBA) or
+          (SDL_PIXELORDER(format) = SDL_PACKEDORDER_ABGR) or
+          (SDL_PIXELORDER(format) = SDL_PACKEDORDER_BGRA)
+        )
+      )
+      or
+      (
+        SDL_ISPIXELFORMAT_ARRAY(format) and
+        (
+          (SDL_PIXELORDER(format) = SDL_ARRAYORDER_ARGB) or
+          (SDL_PIXELORDER(format) = SDL_ARRAYORDER_RGBA) or
+          (SDL_PIXELORDER(format) = SDL_ARRAYORDER_ABGR) or
+          (SDL_PIXELORDER(format) = SDL_ARRAYORDER_BGRA)
+        )
+      )
+    )
+end;
+
+function SDL_ISPIXELFORMAT_FOURCC(format: TSDL_PixelFormat): Boolean;
+begin
+  (* The flag is set to 1 because 0x1? is not in the printable ASCII range *)
+  Result := (format <> 0) and (SDL_PIXELFLAG(format) <> 1)
+end;
+
 end.

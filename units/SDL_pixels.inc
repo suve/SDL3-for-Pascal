@@ -193,303 +193,6 @@ const
   SDL_PACKEDLAYOUT_2101010 = TSDL_PackedLayout(7);
   SDL_PACKEDLAYOUT_1010102 = TSDL_PackedLayout(8);
 
-{ #todo : SDL3-for-Pascal: Translate these macros. }
-{
-/**
- * A macro for defining custom FourCC pixel formats.
- *
- * For example, defining SDL_PIXELFORMAT_YV12 looks like this:
- *
- * ```c
- * SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2')
- * ```
- *
- * \param A the first character of the FourCC code.
- * \param B the second character of the FourCC code.
- * \param C the third character of the FourCC code.
- * \param D the fourth character of the FourCC code.
- * \returns a format value in the style of SDL_PixelFormat.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_DEFINE_PIXELFOURCC(A, B, C, D) SDL_FOURCC(A, B, C, D)
-
-/**
- * A macro for defining custom non-FourCC pixel formats.
- *
- * For example, defining SDL_PIXELFORMAT_RGBA8888 looks like this:
- *
- * ```c
- * SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_8888, 32, 4)
- * ```
- *
- * \param type the type of the new format, probably a SDL_PixelType value.
- * \param order the order of the new format, probably a SDL_BitmapOrder,
- *              SDL_PackedOrder, or SDL_ArrayOrder value.
- * \param layout the layout of the new format, probably an SDL_PackedLayout
- *               value or zero.
- * \param bits the number of bits per pixel of the new format.
- * \param bytes the number of bytes per pixel of the new format.
- * \returns a format value in the style of SDL_PixelFormat.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
-    ((1 << 28) | ((type) << 24) | ((order) << 20) | ((layout) << 16) | \
-     ((bits) << 8) | ((bytes) << 0))
-
-/**
- * A macro to retrieve the flags of an SDL_PixelFormat.
- *
- * This macro is generally not needed directly by an app, which should use
- * specific tests, like SDL_ISPIXELFORMAT_FOURCC, instead.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the flags of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_PIXELFLAG(format)    (((format) >> 28) & 0x0F)
-
-/**
- * A macro to retrieve the type of an SDL_PixelFormat.
- *
- * This is usually a value from the SDL_PixelType enumeration.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the type of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_PIXELTYPE(format)    (((format) >> 24) & 0x0F)
-
-/**
- * A macro to retrieve the order of an SDL_PixelFormat.
- *
- * This is usually a value from the SDL_BitmapOrder, SDL_PackedOrder, or
- * SDL_ArrayOrder enumerations, depending on the format type.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the order of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_PIXELORDER(format)   (((format) >> 20) & 0x0F)
-
-/**
- * A macro to retrieve the layout of an SDL_PixelFormat.
- *
- * This is usually a value from the SDL_PackedLayout enumeration, or zero if a
- * layout doesn't make sense for the format type.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the layout of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_PIXELLAYOUT(format)  (((format) >> 16) & 0x0F)
-
-/**
- * A macro to determine an SDL_PixelFormat's bits per pixel.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * FourCC formats will report zero here, as it rarely makes sense to measure
- * them per-pixel.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the bits-per-pixel of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- *
- * \sa SDL_BYTESPERPIXEL
- */
-#define SDL_BITSPERPIXEL(format) \
-    (SDL_ISPIXELFORMAT_FOURCC(format) ? 0 : (((format) >> 8) & 0xFF))
-
-/**
- * A macro to determine an SDL_PixelFormat's bytes per pixel.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * FourCC formats do their best here, but many of them don't have a meaningful
- * measurement of bytes per pixel.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns the bytes-per-pixel of `format`.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- *
- * \sa SDL_BITSPERPIXEL
- */
-#define SDL_BYTESPERPIXEL(format) \
-    (SDL_ISPIXELFORMAT_FOURCC(format) ? \
-        ((((format) == SDL_PIXELFORMAT_YUY2) || \
-          ((format) == SDL_PIXELFORMAT_UYVY) || \
-          ((format) == SDL_PIXELFORMAT_YVYU) || \
-          ((format) == SDL_PIXELFORMAT_P010)) ? 2 : 1) : (((format) >> 0) & 0xFF))
-
-
-/**
- * A macro to determine if an SDL_PixelFormat is an indexed format.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format is indexed, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_INDEXED(format)   \
-    (!SDL_ISPIXELFORMAT_FOURCC(format) && \
-     ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX1) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX2) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX4) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX8)))
-
-/**
- * A macro to determine if an SDL_PixelFormat is a packed format.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format is packed, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_PACKED(format) \
-    (!SDL_ISPIXELFORMAT_FOURCC(format) && \
-     ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED8) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED16) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32)))
-
-/**
- * A macro to determine if an SDL_PixelFormat is an array format.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format is an array, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_ARRAY(format) \
-    (!SDL_ISPIXELFORMAT_FOURCC(format) && \
-     ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU16) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU32) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
-      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
-
-/**
- * A macro to determine if an SDL_PixelFormat is a 10-bit format.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format is 10-bit, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_10BIT(format)    \
-      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
-       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
-        (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010)))
-
-/**
- * A macro to determine if an SDL_PixelFormat is a floating point format.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format is a floating point, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_FLOAT(format)    \
-      (!SDL_ISPIXELFORMAT_FOURCC(format) && \
-       ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
-        (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
-
-/**
- * A macro to determine if an SDL_PixelFormat has an alpha channel.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format has alpha, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_ALPHA(format)   \
-    ((SDL_ISPIXELFORMAT_PACKED(format) && \
-      ((SDL_PIXELORDER(format) == SDL_PACKEDORDER_ARGB) || \
-       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_RGBA) || \
-       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_ABGR) || \
-       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))) || \
-     (SDL_ISPIXELFORMAT_ARRAY(format) && \
-      ((SDL_PIXELORDER(format) == SDL_ARRAYORDER_ARGB) || \
-       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_RGBA) || \
-       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_ABGR) || \
-       (SDL_PIXELORDER(format) == SDL_ARRAYORDER_BGRA))))
-
-
-
-/**
- * A macro to determine if an SDL_PixelFormat is a "FourCC" format.
- *
- * This covers custom and other unusual formats.
- *
- * Note that this macro double-evaluates its parameter, so do not use
- * expressions with side-effects here.
- *
- * \param format an SDL_PixelFormat to check.
- * \returns true if the format has alpha, false otherwise.
- *
- * \threadsafety It is safe to call this macro from any thread.
- *
- * \since This macro is available since SDL 3.2.0.
- */
-#define SDL_ISPIXELFORMAT_FOURCC(format)  /* The flag is set to 1 because 0x1? is not in the printable ASCII range */ \
-    ((format) && (SDL_PIXELFLAG(format) != 1))
-}
-
 { Note: If you modify this enum, update SDL_GetPixelFormatName()  }
 
 {*
@@ -637,6 +340,258 @@ const
       {$FATAL Cannot determine endianness.}
     {$IFEND}
   {$ENDIF}
+
+{*
+ * A macro for defining custom FourCC pixel formats.
+ *
+ * For example, defining SDL_PIXELFORMAT_YV12 looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2')
+ * ```
+ *
+ * \param A the first character of the FourCC code.
+ * \param B the second character of the FourCC code.
+ * \param C the third character of the FourCC code.
+ * \param D the fourth character of the FourCC code.
+ * \returns a format value in the style of SDL_PixelFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_DEFINE_PIXELFOURCC(A, B, C, D: AnsiChar): TSDL_PixelFormat;
+
+{*
+ * A macro for defining custom non-FourCC pixel formats.
+ *
+ * For example, defining SDL_PIXELFORMAT_RGBA8888 looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_8888, 32, 4)
+ * ```
+ *
+ * \param type the type of the new format, probably a SDL_PixelType value.
+ * \param order the order of the new format, probably a SDL_BitmapOrder,
+ *              SDL_PackedOrder, or SDL_ArrayOrder value.
+ * \param layout the layout of the new format, probably an SDL_PackedLayout
+ *               value or zero.
+ * \param bits the number of bits per pixel of the new format.
+ * \param bytes the number of bytes per pixel of the new format.
+ * \returns a format value in the style of SDL_PixelFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_DEFINE_PIXELFORMAT(type_: TSDL_PixelType; order: Integer; layout: TSDL_PackedLayout; bits, bytes: Integer): TSDL_PixelFormat;
+
+{*
+ * A macro to retrieve the flags of an SDL_PixelFormat.
+ *
+ * This macro is generally not needed directly by an app, which should use
+ * specific tests, like SDL_ISPIXELFORMAT_FOURCC, instead.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the flags of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_PIXELFLAG(format: TSDL_PixelFormat): Integer;
+
+{*
+ * A macro to retrieve the type of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_PixelType enumeration.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the type of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_PIXELTYPE(format: TSDL_PixelFormat): TSDL_PixelType;
+
+{*
+ * A macro to retrieve the order of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_BitmapOrder, SDL_PackedOrder, or
+ * SDL_ArrayOrder enumerations, depending on the format type.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the order of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_PIXELORDER(format: TSDL_PixelFormat): Integer;
+
+{*
+ * A macro to retrieve the layout of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_PackedLayout enumeration, or zero if a
+ * layout doesn't make sense for the format type.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the layout of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_PIXELLAYOUT(format: TSDL_PixelFormat): TSDL_PackedLayout;
+
+{**
+ * A macro to determine an SDL_PixelFormat's bits per pixel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * FourCC formats will report zero here, as it rarely makes sense to measure
+ * them per-pixel.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the bits-per-pixel of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BYTESPERPIXEL
+ *}
+function SDL_BITSPERPIXEL(format: TSDL_PixelFormat): Integer;
+
+{**
+ * A macro to determine an SDL_PixelFormat's bytes per pixel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * FourCC formats do their best here, but many of them don't have a meaningful
+ * measurement of bytes per pixel.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the bytes-per-pixel of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BITSPERPIXEL
+ *}
+function SDL_BYTESPERPIXEL(format: TSDL_PixelFormat): Integer;
+
+{**
+ * A macro to determine if an SDL_PixelFormat is an indexed format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is indexed, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_INDEXED(format: TSDL_PixelFormat): Boolean;
+
+{*
+ * A macro to determine if an SDL_PixelFormat is a packed format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is packed, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_PACKED(format: TSDL_PixelFormat): Boolean;
+
+{**
+ * A macro to determine if an SDL_PixelFormat is an array format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is an array, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_ARRAY(format: TSDL_PixelFormat): Boolean;
+
+{**
+ * A macro to determine if an SDL_PixelFormat is a 10-bit format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is 10-bit, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_10BIT(format: TSDL_PixelFormat): Boolean;
+
+{**
+ * A macro to determine if an SDL_PixelFormat is a floating point format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is a floating point, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_FLOAT(format: TSDL_PixelFormat): Boolean;
+
+{**
+ * A macro to determine if an SDL_PixelFormat has an alpha channel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format has alpha, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_ALPHA(format: TSDL_PixelFormat): Boolean;
+
+{**
+ * A macro to determine if an SDL_PixelFormat is a "FourCC" format.
+ *
+ * This covers custom and other unusual formats.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format has alpha, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *}
+function SDL_ISPIXELFORMAT_FOURCC(format: TSDL_PixelFormat): Boolean;
+
 
 {*
  * Colorspace color type.
