@@ -366,5 +366,10 @@ begin
   Result := TSDL_MouseButtonFlags(1) shl (X-1)
 end;
 
-end.
+{ Macros from SDL_stdinc.h}
+function SDL_FOURCC(A, B, C, D: AnsiChar): cuint32;
+begin
+  Result := (cuint32(Ord(A)) shl 0) or (cuint32(Ord(B)) shl 8) or (cuint32(Ord(C)) shl 16) or (cuint32(Ord(D)) shl 24)
+end;
 
+end.
