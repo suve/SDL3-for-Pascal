@@ -1235,6 +1235,361 @@ procedure NET_SimulateStreamPacketLoss(sock: PNET_StreamSocket; percent_loss: ci
 procedure NET_DestroyStreamSocket(sock: PNET_StreamSocket); cdecl;
   external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_DestroyStreamSocket' {$ENDIF} {$ENDIF};
 
+{ -- Datagram (UDP) API -- }
+
+type
+(*
+ * An object that represents a datagram connection to another system.
+ *
+ * This is meant to be an unreliable, packet-oriented connection, such as UDP.
+ *
+ * Datagram sockets follow different rules than stream sockets. They are not a
+ * reliable stream of bytes but rather packets, they are not limited to
+ * talking to a single other remote system, they do not maintain a single
+ * "connection" that can be dropped, and they are more nimble about network
+ * failures at the expense of being more complex to use. What makes sense for
+ * your app depends entirely on what your app is trying to accomplish.
+ *
+ * Generally the idea of a datagram socket is that you send data one chunk
+ * ("packet") at a time to any address you want, and it arrives whenever it
+ * gets there, even if later packets get there first, and maybe it doesn't get
+ * there at all, and you don't know when anything of this happens by default.
+ *
+ * \since This datatype is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateDatagramSocket
+ * \sa NET_SendDatagram
+ * \sa NET_ReceiveDatagram
+ *)
+  PNET_DatagramSocket = type Pointer;
+  PPNET_DatagramSocket = ^PNET_DatagramSocket;
+
+(*
+ * The data provided for new incoming packets from NET_ReceiveDatagram().
+ *
+ * \since This datatype is available since SDL_net 3.0.0.
+ *
+ * \sa NET_ReceiveDatagram
+ * \sa NET_DestroyDatagram
+ *)
+  TNET_Datagram = record
+    addr: PNET_Address; (**< Sender's address. This is unref'd by NET_DestroyDatagram. You only need to ref it if you want to keep it. *)
+    port: cuint16;      (**< Sender's port. These do not have to come from the same port the receiver is bound to. These are in host byte order, don't byteswap them! *)
+    buf: pcuint8;       (**< the payload of this datagram. *)
+    buflen: cint;       (**< the number of bytes available at `buf`. *)
+  end;
+  PNET_Datagram = ^TNET_Datagram;
+  PPNET_Datagram = ^PNET_Datagram;
+
+(*
+ * Create and bind a new datagram socket.
+ *
+ * Datagram sockets follow different rules than stream sockets. They are not a
+ * reliable stream of bytes but rather packets, they are not limited to
+ * talking to a single other remote system, they do not maintain a single
+ * "connection" that can be dropped, and they are more nimble about network
+ * failures at the expense of being more complex to use. What makes sense for
+ * your app depends entirely on what your app is trying to accomplish.
+ *
+ * Generally the idea of a datagram socket is that you send data one chunk
+ * ("packet") at a time to any address you want, and it arrives whenever it
+ * gets there, even if later packets get there first, and maybe it doesn't get
+ * there at all, and you don't know when anything of this happens by default.
+ *
+ * This function creates a new datagram socket.
+ *
+ * This function does not block, and is not asynchronous, as the system can
+ * decide immediately if it can create a socket or not. If this returns
+ * success, you can immediately start talking to the network.
+ *
+ * You can specify an address to listen for connections on; this address must
+ * be local to the system, and probably one returned by
+ * NET_GetLocalAddresses(), but almost always you just want to specify NULL
+ * here, to listen on any address available to the app.
+ *
+ * If you need to bind to a specific port (like a server), you should specify
+ * it in the `port` argument; datagram servers should do this, so they can be
+ * reached at a well-known port. If you only plan to initiate communications
+ * (like a client), you should specify 0 and let the system pick an unused
+ * port. Only one process can bind to a specific port at a time, so if you
+ * aren't acting as a server, you should choose 0. Datagram sockets can send
+ * individual packets to any port, so this just declares where data will
+ * arrive for your socket.
+ *
+ * Datagram sockets don't employ any protocol (above the UDP level), so they
+ * can talk to apps that aren't using SDL_net, but if you want to speak any
+ * protocol beyond arbitrary packets of bytes, such as WebRTC, you'll have to
+ * implement that yourself on top of the stream socket.
+ *
+ * Unlike BSD sockets or WinSock, you specify the port as a normal integer;
+ * you do not have to byteswap it into "network order," as the library will
+ * handle that for you.
+ *
+ * The caller may supply properties to customize behavior. This is optional,
+ * and a value of zero for `props` will request defaults for all properties.
+ *
+ * These are the supported properties:
+ *
+ * - `NET_PROP_DATAGRAM_SOCKET_REUSEADDR_BOOLEAN`: true if the socket should
+ *   be created even if a previous socket has recently used this address. For
+ *   various reasons, networks prefer that there be some delay between apps
+ *   reusing the same address, but this can be problematic when iterating
+ *   quickly, for software development purposes or just restarting a crashed
+ *   service. This property defaults to true (although it should be noted
+ *   that, at the operating system level, this defaults to false!). If this
+ *   property is false and the OS feels that not enough time has elapsed,
+ *   socket creation will fail and this function will report an error.
+ * - `NET_PROP_DATAGRAM_SOCKET_ALLOW_BROADCAST_BOOLEAN`: true if the socket
+ *   should allow broadcasting. At the lower level, this will set
+ *   `SO_BROADCAST` for IPv4 sockets, to allow sending to the subnet's
+ *   broadcast address at the OS level. For IPv6, it'll join the all-nodes
+ *   link-local multicast group, ff02::1, allowing sending and receiving
+ *   there, more or less simulating the usual IPv4 broadcast semantics. Other
+ *   protocols take similar approaches. If you do not intend to send or
+ *   receive broadcast packets on this socket, set this property to false, or
+ *   omit it, as it defaults to false. Note: IPv4 will still be able to
+ *   receive broadcast packets without this option, but IPv6 will not. Also
+ *   see notes about sending to a broadcast address in NET_SendDatagram().
+ *
+ * \param addr the local address to listen for connections on, or NULL to
+ *             listen on all available local addresses.
+ * \param port the port on the local address to listen for connections on, or
+ *             zero for the system to decide.
+ * \param props properties of the new socket. Specify zero for defaults.
+ * \returns a new NET_DatagramSocket, or NULL on error; call SDL_GetError()
+ *          for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_GetLocalAddresses
+ * \sa NET_DestroyDatagramSocket
+ *)
+function NET_CreateDatagramSocket(addr: PNET_Address; port: cuint16; props: TSDL_PropertiesID): PNET_DatagramSocket; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_CreateDatagramSocket' {$ENDIF} {$ENDIF};
+
+const
+  NET_PROP_DATAGRAM_SOCKET_REUSEADDR_BOOLEAN       = 'NET.datagram_socket.reuseaddr';
+  NET_PROP_DATAGRAM_SOCKET_ALLOW_BROADCAST_BOOLEAN = 'NET.datagram_socket.allow_broadcast';
+
+(*
+ * Send a new packet over a datagram socket to a remote system.
+ *
+ * Datagram sockets send packets of data. They either arrive as complete
+ * packets or they don't arrive at all, as opposed to stream sockets, where
+ * individual bytes might trickle in as they attempt to reliably deliver a
+ * stream of data.
+ *
+ * Datagram packets might arrive in a different order than you sent them, or
+ * they may just be lost while travelling across the network. You have to plan
+ * for this. As an added confusion, since SDL_net might send the same packet
+ * on multiple interfaces, you might get duplicate packets, possibly from
+ * different network addresses. You have to plan for this, too.
+ *
+ * You can send to any address and port on the network, but there has to be a
+ * datagram socket waiting for the data on the other side for the packet not
+ * to be lost.
+ *
+ * General wisdom is that you shouldn't send a packet larger than 1500 bytes
+ * over the Internet, as bad routers might fragment or lose larger ones, but
+ * this limit is not hardcoded into SDL_net and in good conditions you might
+ * be able to send significantly more.
+ *
+ * This call never blocks; if it can't send the data immediately, the library
+ * will queue it for later transmission. There is no query to see what is
+ * still queued, as datagram transmission is unreliable, so you should never
+ * assume anything about queued data.
+ *
+ * If there's a fatal error, this function will return false. Datagram sockets
+ * generally won't report failures, because there is no state like a
+ * "connection" to fail at this level, but may report failure for
+ * unrecoverable system-level conditions; once a datagram socket fails, you
+ * should assume it is no longer usable and should destroy it with
+ * SDL_DestroyDatagramSocket().
+ *
+ * Sending to a NULL address is treated as a request to broadcast a packet.
+ * Note that this will report failure immediately if the socket was not
+ * created with broadcast permission. Broadcast packets are (more or less)
+ * sent to every machine on the LAN, unconditionally.
+ *
+ * **WARNING**: It is possible to build a game where everyone is playing on
+ * the same LAN, and every player is simply broadcasting packets. This is
+ * absolutely the wrong thing to do, however. Broadcast packets go to every
+ * device on the LAN, whether they want them or not. The game DOOM, in its
+ * heyday, was capable of
+ * [bringing entire networks to their knees](https://doomwiki.org/wiki/Doom_in_workplaces)
+ * , as many players on the same network would all be broadcasting
+ * relentlessly.
+ *
+ * In practice, broadcasting sparingly can be useful for certain
+ * functionality: a LAN-only client broadcasting a few packets to ask for
+ * available servers, and running servers replying directly to that client
+ * without broadcasting at all, is reasonable and safe. Once clients and
+ * servers have found each other, they can communicate directly without any
+ * broadcasting at all. For peer-to-peer games, once connection is
+ * established, it's better to either send unique packets to each known
+ * player, or use a multicasting (which works like broadcast, but only routes
+ * packets to devices that are explicitly listening for it).
+ *
+ * With IPv6, which doesn't support broadcasts, broadcasting is faked with
+ * multicast to the all-nodes link-local multicast group, ff02::1, either on a
+ * specific interface or letting the OS choose the default. Other protocols
+ * might fake broadcast operations in similar ways in the future.
+ *
+ * \param sock the datagram socket to send data through.
+ * \param address the NET_Address object address. May be NULL to broadcast.
+ * \param port the address port.
+ * \param buf a pointer to the data to send as a single packet.
+ * \param buflen the size of the data to send, in bytes.
+ * \returns true if data sent or queued for transmission, false on failure;
+ *          call SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_ReceiveDatagram
+ *)
+function NET_SendDatagram(sock: PNET_DatagramSocket; address: PNET_Address; port: cuint16; const buf: Pointer; buflen: cint): Boolean; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_SendDatagram' {$ENDIF} {$ENDIF};
+
+(*
+ * Receive a new packet that a remote system sent to a datagram socket.
+ *
+ * Datagram sockets send packets of data. They either arrive as complete
+ * packets or they don't arrive at all, so you'll never receive half a packet.
+ *
+ * This call never blocks; if no new data is available at the time of the
+ * call, it returns true immediately. The caller can try again later.
+ *
+ * On a successful call to this function, it returns true, even if no new
+ * packets are available, so you should check for a successful return and a
+ * non-NULL value in `*dgram` to decide if a new packet is available.
+ *
+ * You must pass received packets to NET_DestroyDatagram when you are done
+ * with them. If you want to save the sender's address past this time, it is
+ * safe to call NET_RefAddress() on the address and hold onto the pointer, so
+ * long as you call NET_UnrefAddress() on it when you are done with it.
+ *
+ * Since datagrams can arrive from any address or port on the network without
+ * prior warning, this information is available in the NET_Datagram object
+ * that is provided by this function, and this is the only way to know who to
+ * reply to. Even if you aren't acting as a "server," packets can still arrive
+ * at your socket if someone sends one.
+ *
+ * If there's a fatal error, this function will return false. Datagram sockets
+ * generally won't report failures, because there is no state like a
+ * "connection" to fail at this level, but may report failure for
+ * unrecoverable system-level conditions; once a datagram socket fails, you
+ * should assume it is no longer usable and should destroy it with
+ * SDL_DestroyDatagramSocket().
+ *
+ * \param sock the datagram socket to send data through.
+ * \param dgram a pointer to the datagram packet pointer.
+ * \returns true if data sent or queued for transmission, false on failure;
+ *          call SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_SendDatagram
+ * \sa NET_DestroyDatagram
+ *)
+function NET_ReceiveDatagram(sock: PNET_DatagramSocket; dgram: PPNET_Datagram): Boolean; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_ReceiveDatagram' {$ENDIF} {$ENDIF};
+
+(*
+ * Dispose of a datagram packet previously received.
+ *
+ * You must pass packets received through NET_ReceiveDatagram to this function
+ * when you are done with them. This will free resources used by this packet
+ * and unref its NET_Address.
+ *
+ * If you want to save the sender's address from the packet past this time, it
+ * is safe to call NET_RefAddress() on the address and hold onto its pointer,
+ * so long as you call NET_UnrefAddress() on it when you are done with it.
+ *
+ * Once you call this function, the datagram pointer becomes invalid and
+ * should not be used again by the app.
+ *
+ * \param dgram the datagram packet to destroy.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *)
+procedure NET_DestroyDatagram(dgram: PNET_Datagram); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_DestroyDatagram' {$ENDIF} {$ENDIF};
+
+(*
+ * Enable simulated datagram socket failures.
+ *
+ * Often times, testing a networked app on your development machine--which
+ * might have a wired connection to a fast, reliable network service--won't
+ * expose bugs that happen when networks intermittently fail in the real
+ * world, when the wifi is flakey and firewalls get in the way.
+ *
+ * This function allows you to tell the library to pretend that some
+ * percentage of datagram socket data transmission will fail.
+ *
+ * The library will randomly lose packets (both incoming and outgoing) at an
+ * average matching `percent_loss`. Setting this to zero (the default) will
+ * disable the simulation. Setting to 100 means _everything_ fails
+ * unconditionally and no further data will get through. At what percent the
+ * system merely borders on unusable is left as an exercise to the app
+ * developer.
+ *
+ * This is intended for debugging purposes, to simulate real-world conditions
+ * that are various degrees of terrible. You probably should _not_ call this
+ * in production code, where you'll likely see real failures anyhow.
+ *
+ * \param sock The socket to set a failure rate on.
+ * \param percent_loss A number between 0 and 100. Higher means more failures.
+ *                     Zero to disable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *)
+procedure NET_SimulateDatagramPacketLoss(sock: PNET_DatagramSocket; percent_loss: cint); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_SimulateDatagramPacketLoss' {$ENDIF} {$ENDIF};
+
+(*
+ * Dispose of a previously-created datagram socket.
+ *
+ * This will _abandon_ any data queued for sending that hasn't made it to the
+ * socket. If you need this data to arrive, you should wait for confirmation
+ * from the remote computer in some form that you devise yourself. Queued data
+ * is not guaranteed to arrive even if the library made efforts to transmit it
+ * here.
+ *
+ * Any data that has arrived from the remote end of the connection that hasn't
+ * been read yet is lost.
+ *
+ * \param sock datagram socket to destroy.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateDatagramSocket
+ * \sa NET_SendDatagram
+ * \sa NET_ReceiveDatagram
+ *)
+procedure NET_DestroyDatagramSocket(sock: PNET_DatagramSocket); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_DestroyDatagramSocket' {$ENDIF} {$ENDIF};
+
 
 implementation
 
