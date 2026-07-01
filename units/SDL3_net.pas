@@ -651,6 +651,590 @@ function NET_GetLocalAddresses(num_addresses: pcint): PPNET_Address; cdecl;
 procedure NET_FreeLocalAddresses(addresses: PPNET_Address); cdecl;
   external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_FreeLocalAddresses' {$ENDIF} {$ENDIF};
 
+{ -- Streaming (TCP) API -- }
+
+type
+(*
+ * An object that represents a streaming connection to another system.
+ *
+ * This is meant to be a reliable, stream-oriented connection, such as TCP.
+ *
+ * Each NET_StreamSocket represents a single connection between systems.
+ * Usually, a client app will have one connection to a server app on a
+ * different computer, and the server app might have many connections from
+ * different clients. Each of these connections communicate over a separate
+ * stream socket.
+ *
+ * \since This datatype is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateClient
+ * \sa NET_WriteToStreamSocket
+ * \sa NET_ReadFromStreamSocket
+ *)
+  PNET_StreamSocket = type Pointer;
+  PPNET_StreamSocket = ^PNET_StreamSocket;
+
+(*
+ * Begin connecting a socket as a client to a remote server.
+ *
+ * Each NET_StreamSocket represents a single connection between systems.
+ * Usually, a client app will have one connection to a server app on a
+ * different computer, and the server app might have many connections from
+ * different clients. Each of these connections communicate over a separate
+ * stream socket.
+ *
+ * Connecting is an asynchronous operation; this function does not block, and
+ * will return before the connection is complete. One has to then use
+ * NET_WaitUntilConnected() or NET_GetConnectionStatus() to see when the
+ * operation has completed, and if it was successful.
+ *
+ * Once connected, you can read and write data to the returned socket. Stream
+ * sockets are a mode of _reliable_ transmission, which means data will be
+ * received as a stream of bytes in the order you sent it. If there are
+ * problems in transmission, the system will deal with protocol negotiation
+ * and retransmission as necessary, transparent to your app, but this means
+ * until data is available in the order sent, the remote side will not get any
+ * new data. This is the tradeoff vs datagram sockets, where data can arrive
+ * in any order, or not arrive at all, without waiting, but the sender will
+ * not know.
+ *
+ * Stream sockets don't employ any protocol (above the TCP level), so they can
+ * connect to servers that aren't using SDL_net, but if you want to speak any
+ * protocol beyond an abritrary stream of bytes, such as HTTP, you'll have to
+ * implement that yourself on top of the stream socket.
+ *
+ * This function will fail if `address` is not finished resolving.
+ *
+ * When you are done with this connection (whether it failed to connect or
+ * not), you must dispose of it with NET_DestroyStreamSocket().
+ *
+ * Unlike BSD sockets or WinSock, you specify the port as a normal integer;
+ * you do not have to byteswap it into "network order," as the library will
+ * handle that for you.
+ *
+ * There are currently no extra properties for creating a client, so `props`
+ * should be zero. A future revision of SDL_net may add additional (optional)
+ * properties.
+ *
+ * \param address the address of the remote server to connect to.
+ * \param port the port on the remote server to connect to.
+ * \param props properties of the new client. Specify zero for defaults.
+ * \returns a new NET_StreamSocket, pending connection, or NULL on error; call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WaitUntilConnected
+ * \sa NET_GetConnectionStatus
+ * \sa NET_DestroyStreamSocket
+ *)
+function NET_CreateClient(address: PNET_Address; port: cuint16; props: TSDL_PropertiesID): PNET_StreamSocket; cdecl; 
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_CreateClient' {$ENDIF} {$ENDIF};
+
+(*
+ * Block until a stream socket has connected to a server.
+ *
+ * The NET_StreamSocket objects returned by NET_CreateClient take time to do
+ * their work, so it does so _asynchronously_ instead of making your program
+ * wait an indefinite amount of time.
+ *
+ * However, if you want your program to sleep until the connection is
+ * complete, you can call this function.
+ *
+ * This function takes a timeout value, represented in milliseconds, of how
+ * long to wait for resolution to complete. Specifying a timeout of -1
+ * instructs the library to wait indefinitely, and a timeout of 0 just checks
+ * the current status and returns immediately (and is functionally equivalent
+ * to calling NET_GetConnectionStatus).
+ *
+ * Connections can fail after some time (server took awhile to respond at all,
+ * and then refused the connection outright), so be sure to check the result
+ * of this function instead of assuming it worked!
+ *
+ * Once a connection is successfully made, the socket may read data from, or
+ * write data to, the connected server.
+ *
+ * If you don't want your program to block, you can call
+ * NET_GetConnectionStatus() from time to time until you get a non-zero
+ * result.
+ *
+ * \param sock The NET_StreamSocket object to wait on.
+ * \param timeout Number of milliseconds to wait for resolution to complete.
+ *                -1 to wait indefinitely, 0 to check once without waiting.
+ * \returns NET_SUCCESS if successfully connected, NET_FAILURE if connection
+ *          failed, NET_WAITING if still connecting (this function timed out
+ *          without resolution); if NET_FAILURE, call SDL_GetError() for
+ *          details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               socket at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_GetConnectionStatus
+ *)
+function NET_WaitUntilConnected(sock: PNET_StreamSocket; timeout: cint32): TNET_Status; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_WaitUntilConnected' {$ENDIF} {$ENDIF};
+
+type
+(*
+ * The receiving end of a stream connection.
+ *
+ * This is an opaque datatype, to be treated by the app as a handle.
+ *
+ * Internally, this is what BSD sockets refers to as a "listen socket".
+ * Clients attempt to connect to a server, and if the server accepts the
+ * connection, will provide the app with a stream socket to send and receive
+ * data over that connection.
+ *
+ * \since This datatype is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateServer
+ *)
+  PNET_Server = type Pointer;
+  PPNET_Server = ^PNET_Server;
+
+(*
+ * Create a server, which listens for connections to accept.
+ *
+ * An app that initiates connection to a remote computer is called a "client,"
+ * and the thing the client connects to is called a "server."
+ *
+ * Servers listen for and accept connections from clients, which spawns a new
+ * stream socket on the server's end, which it can then send/receive data on.
+ *
+ * Use this function to create a server that will accept connections from
+ * other systems.
+ *
+ * This function does not block, and is not asynchronous, as the system can
+ * decide immediately if it can create a server or not. If this returns
+ * success, you can immediately start accepting connections.
+ *
+ * You can specify an address to listen for connections on; this address must
+ * be local to the system, and probably one returned by
+ * NET_GetLocalAddresses(), but almost always you just want to specify NULL
+ * here, to listen on any address available to the app.
+ *
+ * After creating a server, you get stream sockets to talk to incoming client
+ * connections by calling NET_AcceptClient().
+ *
+ * Stream sockets don't employ any protocol (above the TCP level), so they can
+ * accept connections from clients that aren't using SDL_net, but if you want
+ * to speak any protocol beyond an abritrary stream of bytes, such as HTTP,
+ * you'll have to implement that yourself on top of the stream socket.
+ *
+ * Unlike BSD sockets or WinSock, you specify the port as a normal integer;
+ * you do not have to byteswap it into "network order," as the library will
+ * handle that for you.
+ *
+ * The caller may supply properties to customize behavior. This is optional,
+ * and a value of zero for `props` will request defaults for all properties.
+ *
+ * These are the supported properties:
+ *
+ * - `NET_PROP_SERVER_REUSEADDR_BOOLEAN`: true if the server should be created
+ *   even if a previous server has recently used this address. For various
+ *   reasons, networks prefer that there be some delay between apps reusing
+ *   the same address, but this can be problematic when iterating quickly, for
+ *   software development purposes or just restarting a crashed service. This
+ *   property defaults to true (although it should be noted that, at the
+ *   operating system level, this defaults to false!). If this property is
+ *   false and the OS feels that not enough time has elapsed, server creation
+ *   will fail and this function will report an error.
+ *
+ * \param addr the _local_ address to listen for connections on, or NULL.
+ * \param port the port on the local address to listen for connections on.
+ * \param props properties of the new server. Specify zero for defaults.
+ * \returns a new NET_Server, or NULL on error; call SDL_GetError() for
+ *          details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_GetLocalAddresses
+ * \sa NET_AcceptClient
+ * \sa NET_DestroyServer
+ *)
+function NET_CreateServer(addr: PNET_Address; port: cuint16; props: TSDL_PropertiesID): PNET_Server; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_CreateServer' {$ENDIF} {$ENDIF};
+
+const
+  NET_PROP_SERVER_REUSEADDR_BOOLEAN = 'NET.server.reuseaddr';
+
+(*
+ * Create a stream socket for the next pending client connection.
+ *
+ * When a client connects to a server, their connection will be pending until
+ * the server _accepts_ the connection. Once accepted, the server will be
+ * given a stream socket to communicate with the client, and they can send
+ * data to, and receive data from, each other.
+ *
+ * Unlike NET_CreateClient, stream sockets returned from this function are
+ * already connected and do not have to wait for the connection to complete,
+ * as server acceptance is the final step of connecting.
+ *
+ * This function does not block. If there are no new connections pending, this
+ * function will return true (for success, but `*client_stream` will be set to
+ * NULL. This is not an error and a common condition the app should expect. In
+ * fact, this function should be called in a loop until this condition occurs,
+ * so all pending connections are accepted in a single batch.
+ *
+ * If you want the server to sleep until there's a new connection, you can use
+ * NET_WaitUntilInputAvailable().
+ *
+ * When done with the newly-accepted client, you can disconnect and dispose of
+ * the stream socket by calling NET_DestroyStreamSocket().
+ *
+ * \param server the server object to check for pending connections.
+ * \param client_stream Will be set to a new stream socket if a connection was
+ *                      pending, NULL otherwise.
+ * \returns true on success (even if no new connections were pending), false
+ *          on error; call SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same server from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               servers at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WaitUntilInputAvailable
+ * \sa NET_DestroyStreamSocket
+ *)
+function NET_AcceptClient(server: PNET_Server; client_stream: PPNET_StreamSocket): Boolean; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_AcceptClient' {$ENDIF} {$ENDIF};
+
+(*
+ * Dispose of a previously-created server.
+ *
+ * This will immediately disconnect any pending client connections that had
+ * not yet been accepted, but will not disconnect any existing accepted
+ * connections (which can still be used and must be destroyed separately).
+ * Further attempts to make new connections to this server will fail on the
+ * client side.
+ *
+ * \param server server to destroy.
+ *
+ * \threadsafety You should not operate on the same server from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               servers at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateServer
+ *)
+procedure NET_DestroyServer(server: PNET_Server); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_DestroyServer' {$ENDIF} {$ENDIF};
+
+(*
+ * Get the remote address of a stream socket.
+ *
+ * This reports the address of the remote side of a stream socket, which might
+ * still be pending connnection.
+ *
+ * This adds a reference to the address; the caller _must_ call
+ * NET_UnrefAddress() when done with it.
+ *
+ * \param sock the stream socket to query.
+ * \returns the socket's remote address, or NULL on error; call SDL_GetError()
+ *          for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *)
+function NET_GetStreamSocketAddress(sock: PNET_StreamSocket): PNET_Address; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_GetStreamSocketAddress' {$ENDIF} {$ENDIF};
+
+(*
+ * Check if a stream socket is connected, without blocking.
+ *
+ * The NET_StreamSocket objects returned by NET_CreateClient take time to do
+ * negotiate a connection to a server, so it does so _asynchronously_ instead
+ * of making your program wait an indefinite amount of time.
+ *
+ * This function allows you to check the progress of that work without
+ * blocking.
+ *
+ * Connection can fail after some time (server took a while to respond, and
+ * then rejected the connection), so be sure to check the result of this
+ * function instead of assuming it worked because it's non-zero!
+ *
+ * Once a connection is successfully made, the stream socket can be used to
+ * send and receive data with the server.
+ *
+ * Note that if the connection succeeds, but later the connection is dropped,
+ * this will still report the connection as successful, as it only deals with
+ * the initial asynchronous work of getting connected; you'll know the
+ * connection dropped later when your reads and writes report failures.
+ *
+ * \param sock the stream socket to query.
+ * \returns NET_SUCCESS if successfully connected, NET_FAILURE if connection
+ *          failed, NET_WAITING if still connecting; if NET_FAILURE, call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WaitUntilConnected
+ *)
+function NET_GetConnectionStatus(sock: PNET_StreamSocket): TNET_Status; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_GetConnectionStatus' {$ENDIF} {$ENDIF};
+
+(*
+ * Send bytes over a stream socket to a remote system.
+ *
+ * Stream sockets are _reliable_, which means data sent over them will arrive
+ * in the order it was transmitted, and the system will retransmit data as
+ * necessary to ensure its delivery. Which is to say, short of catastrophic
+ * failure, data will arrive, possibly with severe delays. Also, "catastrophic
+ * failure" isn't an uncommon event.
+ *
+ * (This is opposed to Datagram sockets, which send chunks of data that might
+ * arrive in any order, or not arrive at all, but you never wait for missing
+ * chunks to show up.)
+ *
+ * Stream sockets are _bidirectional_; you can read and write from the same
+ * stream, and the other end of the connection can, too.
+ *
+ * This call never blocks; if it can't send the data immediately, the library
+ * will queue it for later transmission. You can use
+ * NET_GetStreamSocketPendingWrites() to see how much is still queued for
+ * later transmission, or NET_WaitUntilStreamSocketDrained() to block until
+ * all pending data has been sent.
+ *
+ * If the connection has failed (remote side dropped us, or one of a million
+ * other networking failures occurred), this function will report failure by
+ * returning false. Stream sockets only report failure for unrecoverable
+ * conditions; once a stream socket fails, you should assume it is no longer
+ * usable and should destroy it with NET_DestroyStreamSocket().
+ *
+ * \param sock the stream socket to send data through.
+ * \param buf a pointer to the data to send.
+ * \param buflen the size of the data to send, in bytes.
+ * \returns true if data sent or queued for transmission, false on failure;
+ *          call SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_GetStreamSocketPendingWrites
+ * \sa NET_WaitUntilStreamSocketDrained
+ * \sa NET_ReadFromStreamSocket
+ *)
+function NET_WriteToStreamSocket(sock: PNET_StreamSocket; const buf: Pointer; buflen: cint): Boolean; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_WriteToStreamSocket' {$ENDIF} {$ENDIF};
+
+(*
+ * Query bytes still pending transmission on a stream socket.
+ *
+ * If NET_WriteToStreamSocket() couldn't send all its data immediately, it
+ * will queue it to be sent later. This function lets the app see how much of
+ * that queue is still pending to be sent.
+ *
+ * The library will try to send more queued data before reporting what's left,
+ * but it will not block to do so.
+ *
+ * If the connection has failed (remote side dropped us, or one of a million
+ * other networking failures occurred), this function will report failure by
+ * returning -1. Stream sockets only report failure for unrecoverable
+ * conditions; once a stream socket fails, you should assume it is no longer
+ * usable and should destroy it with NET_DestroyStreamSocket().
+ *
+ * \param sock the stream socket to query.
+ * \returns number of bytes still pending transmission, -1 on failure; call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WriteToStreamSocket
+ * \sa NET_WaitUntilStreamSocketDrained
+ *)
+function NET_GetStreamSocketPendingWrites(sock: PNET_StreamSocket): cint; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_GetStreamSocketPendingWrites' {$ENDIF} {$ENDIF};
+
+(*
+ * Block until all of a stream socket's pending data is sent.
+ *
+ * If NET_WriteToStreamSocket() couldn't send all its data immediately, it
+ * will queue it to be sent later. This function lets the app sleep until all
+ * the data is transmitted.
+ *
+ * This function takes a timeout value, represented in milliseconds, of how
+ * long to wait for transmission to complete. Specifying a timeout of -1
+ * instructs the library to wait indefinitely, and a timeout of 0 just checks
+ * the current status and returns immediately (and is functionally equivalent
+ * to calling NET_GetStreamSocketPendingWrites).
+ *
+ * If you don't want your program to block, you can call
+ * NET_GetStreamSocketPendingWrites from time to time until you get a result
+ * <= 0.
+ *
+ * If the connection has failed (remote side dropped us, or one of a million
+ * other networking failures occurred), this function will report failure by
+ * returning -1. Stream sockets only report failure for unrecoverable
+ * conditions; once a stream socket fails, you should assume it is no longer
+ * usable and should destroy it with NET_DestroyStreamSocket().
+ *
+ * \param sock the stream socket to wait on.
+ * \param timeout Number of milliseconds to wait for draining to complete. -1
+ *                to wait indefinitely, 0 to check once without waiting.
+ * \returns number of bytes still pending transmission, -1 on failure; call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WriteToStreamSocket
+ * \sa NET_GetStreamSocketPendingWrites
+ *)
+function NET_WaitUntilStreamSocketDrained(sock: PNET_StreamSocket; timeout: cint32): cint; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_WaitUntilStreamSocketDrained' {$ENDIF} {$ENDIF};
+
+(*
+ * Receive bytes that a remote system sent to a stream socket.
+ *
+ * Stream sockets are _reliable_, which means data sent over them will arrive
+ * in the order it was transmitted, and the system will retransmit data as
+ * necessary to ensure its delivery. Which is to say, short of catastrophic
+ * failure, data will arrive, possibly with severe delays. Also, "catastrophic
+ * failure" isn't an uncommon event.
+ *
+ * (This is opposed to Datagram sockets, which send chunks of data that might
+ * arrive in any order, or not arrive at all, but you never wait for missing
+ * chunks to show up.)
+ *
+ * Stream sockets are _bidirectional_; you can read and write from the same
+ * stream, and the other end of the connection can, too.
+ *
+ * This function returns data that has arrived for the stream socket that
+ * hasn't been read yet. Data is provided in the order it was sent on the
+ * remote side. This function may return less data than requested, depending
+ * on what is available at the time, and also the app isn't required to read
+ * all available data at once.
+ *
+ * This call never blocks; if no new data is available at the time of the
+ * call, it returns 0 immediately. The caller can try again later.
+ *
+ * If the connection has failed (remote side dropped us, or one of a million
+ * other networking failures occurred), this function will report failure by
+ * returning -1. Stream sockets only report failure for unrecoverable
+ * conditions; once a stream socket fails, you should assume it is no longer
+ * usable and should destroy it with NET_DestroyStreamSocket().
+ *
+ * \param sock the stream socket to receive data from.
+ * \param buf a pointer to a buffer where received data will be collected.
+ * \param buflen the size of the buffer pointed to by `buf`, in bytes. This is
+ *               the maximum that will be read from the stream socket.
+ * \returns number of bytes read from the stream socket (which can be less
+ *          than `buflen` or zero if none available), -1 on failure; call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_WriteToStreamSocket
+ *)
+function NET_ReadFromStreamSocket(sock: PNET_StreamSocket; buf: Pointer; buflen: cint): cint; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_ReadFromStreamSocket' {$ENDIF} {$ENDIF};
+
+(*
+ * Enable simulated stream socket failures.
+ *
+ * Often times, testing a networked app on your development machine--which
+ * might have a wired connection to a fast, reliable network service--won't
+ * expose bugs that happen when networks intermittently fail in the real
+ * world, when the wifi is flakey and firewalls get in the way.
+ *
+ * This function allows you to tell the library to pretend that some
+ * percentage of stream socket data transmission will fail.
+ *
+ * Since stream sockets are reliable, failure in this case pretends that
+ * packets are getting lost on the network, making the stream retransmit to
+ * deal with it. To simulate this, the library will introduce some amount of
+ * delay before it sends or receives data on the socket. The higher the
+ * percentage, the more delay is introduced for bytes to make their way to
+ * their final destination. The library may also decide to drop connections at
+ * random, to simulate disasterous network conditions.
+ *
+ * Setting this to zero (the default) will disable the simulation. Setting to
+ * 100 means _everything_ fails unconditionally and no further data will get
+ * through (and perhaps your sockets eventually fail). At what percent the
+ * system merely borders on unusable is left as an exercise to the app
+ * developer.
+ *
+ * This is intended for debugging purposes, to simulate real-world conditions
+ * that are various degrees of terrible. You probably should _not_ call this
+ * in production code, where you'll likely see real failures anyhow.
+ *
+ * \param sock The socket to set a failure rate on.
+ * \param percent_loss A number between 0 and 100. Higher means more failures.
+ *                     Zero to disable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *)
+procedure NET_SimulateStreamPacketLoss(sock: PNET_StreamSocket; percent_loss: cint); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_SimulateStreamPacketLoss' {$ENDIF} {$ENDIF};
+
+(*
+ * Dispose of a previously-created stream socket.
+ *
+ * This will immediately disconnect the other side of the connection, if
+ * necessary. Further attempts to read or write the socket on the remote end
+ * will fail.
+ *
+ * This will _abandon_ any data queued for sending that hasn't made it to the
+ * socket. If you need this data to arrive, you should wait for it to transmit
+ * before destroying the socket with NET_GetStreamSocketPendingWrites() or
+ * NET_WaitUntilStreamSocketDrained(). Any data that has arrived from the
+ * remote end of the connection that hasn't been read yet is lost.
+ *
+ * \param sock stream socket to destroy.
+ *
+ * \threadsafety You should not operate on the same socket from multiple
+ *               threads at the same time without supplying a serialization
+ *               mechanism. However, different threads may access different
+ *               sockets at the same time without problems.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_CreateClient
+ * \sa NET_AcceptClient
+ * \sa NET_GetStreamSocketPendingWrites
+ * \sa NET_WaitUntilStreamSocketDrained
+ *)
+procedure NET_DestroyStreamSocket(sock: PNET_StreamSocket); cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_DestroyStreamSocket' {$ENDIF} {$ENDIF};
+
 
 implementation
 
