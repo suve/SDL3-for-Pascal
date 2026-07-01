@@ -219,6 +219,51 @@ const
   NET_WAITING = TNET_Status( 0); (**< Async operation is still in progress, check again later. *)
   NET_SUCCESS = TNET_Status(+1); (**< Async operation complete, result was success. *)
 
+{ -- init/quit functions... -- }
+
+(*
+ * Initialize the SDL_net library.
+ *
+ * This must be successfully called once before (almost) any other SDL_net
+ * function can be used.
+ *
+ * It is safe to call this multiple times; the library will only initialize
+ * once, and won't deinitialize until NET_Quit() has been called a matching
+ * number of times. Extra attempts to init report success.
+ *
+ * \returns true on success, false on error; call SDL_GetError() for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_Quit
+ *)
+function NET_Init(): Boolean; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_Init' {$ENDIF} {$ENDIF};
+
+(*
+ * Deinitialize the SDL_net library.
+ *
+ * This must be called when done with the library, probably at the end of your
+ * program.
+ *
+ * It is safe to call this multiple times; the library will only deinitialize
+ * once, when this function is called the same number of times as NET_Init was
+ * successfully called.
+ *
+ * Once you have successfully deinitialized the library, it is safe to call
+ * NET_Init to reinitialize it for further use.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *
+ * \sa NET_Init
+ *)
+procedure NET_Quit; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_Quit' {$ENDIF} {$ENDIF};
+
 
 implementation
 
