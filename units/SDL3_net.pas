@@ -191,6 +191,34 @@ function SDL_NET_VERSION_ATLEAST(major, minor, micro: Integer):Boolean;
 function NET_Version(): cint; cdecl;
   external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_Version' {$ENDIF} {$ENDIF};
 
+type
+(*
+ * A tri-state for asynchronous operations.
+ *
+ * Lots of tasks in SDL_net are asynchronous, as they can't complete until
+ * data passes over a network at some murky future point in time.
+ *
+ * This includes sending data over a stream socket, resolving a hostname,
+ * connecting to a remote system, and other tasks.
+ *
+ * The library never blocks on tasks that take time to complete, with the
+ * exception of functions named "Wait", which are intended to do nothing but
+ * block until a task completes. Functions that are attempting to do something
+ * that might block, or are querying the status of a task in-progress, will
+ * return a NET_Status, so an app can see if a task completed, and its final
+ * outcome.
+ *
+ * \since This enum is available since SDL_net 3.0.0.
+ *)
+  TNET_Status = type cint;
+  PNET_Status = ^TNET_Status;
+  PPNET_Status = ^PNET_STATUS;
+
+const
+  NET_FAILURE = TNET_Status(-1); (**< Async operation complete, result was failure. *)
+  NET_WAITING = TNET_Status( 0); (**< Async operation is still in progress, check again later. *)
+  NET_SUCCESS = TNET_Status(+1); (**< Async operation complete, result was success. *)
+
 
 implementation
 
