@@ -135,6 +135,77 @@ const
 
 {$I ctypes.inc}
 
+const
+(*
+ * The current major version of the SDL_net headers.
+ *
+ * If this were SDL_net version 3.2.1, this value would be 3.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ *)
+  SDL_NET_MAJOR_VERSION = 3;
+
+(*
+ * The current minor version of the SDL_net headers.
+ *
+ * If this were SDL_net version 3.2.1, this value would be 2.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ *)
+  SDL_NET_MINOR_VERSION = 2;
+
+(*
+ * The current micro (or patchlevel) version of the SDL_net headers.
+ *
+ * If this were SDL_net version 3.2.1, this value would be 1.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ *)
+  SDL_NET_MICRO_VERSION = 0;
+
+(*
+ * This is the version number function for the current SDL_net version.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ *
+ * \sa NET_Version
+ *)
+function SDL_NET_VERSION(): Integer;
+
+(*
+ * This function will evaluate to true if compiled with SDL_net at least X.Y.Z.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ *)
+function SDL_NET_VERSION_ATLEAST(major, minor, micro: Integer):Boolean;
+
+(*
+ * This function gets the version of the dynamically linked SDL_net library.
+ *
+ * \returns SDL_net version.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_net 3.0.0.
+ *)
+function NET_Version(): cint; cdecl;
+  external NET_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_NET_Version' {$ENDIF} {$ENDIF};
+
+
 implementation
+
+
+function SDL_NET_VERSION(): Integer;
+begin
+  Result := SDL_VERSIONNUM(SDL_NET_MAJOR_VERSION, SDL_NET_MINOR_VERSION, SDL_NET_MICRO_VERSION)
+end;
+
+function SDL_NET_VERSION_ATLEAST(major, minor, micro: Integer): Boolean;
+begin
+  Result := (SDL_NET_MAJOR_VERSION >= major) and
+    ((SDL_NET_MAJOR_VERSION > major) or (SDL_NET_MINOR_VERSION >= minor)) and
+    ((SDL_NET_MAJOR_VERSION > major) or (SDL_NET_MINOR_VERSION > minor) or (SDL_NET_MICRO_VERSION >= micro))
+end;
+
 
 end.
